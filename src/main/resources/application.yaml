@@ -1,3 +1,21 @@
 spring:
   application:
     name: blogapp
+  datasource:
+    url: jdbc:postgresql://${RDS_URL}:5432/postgres
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: ALWAYS
+
+server:
+  port: 2399
+  servlet:
+    context-path: /blog/mono/
