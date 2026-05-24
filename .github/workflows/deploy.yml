@@ -60,23 +60,24 @@ jobs:
             --task-definition ${{ secrets.ECS_TASK_DEFINITION }} \
             --query taskDefinition > task-definition.json
 
-      - name: Update task definition image
+      - name: Prepare new task definition
         run: |
           jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}" '
-          .taskDefinition
-          | .containerDefinitions[0].image = $IMAGE
-          | del(
-              .taskDefinitionArn,
-              .revision,
-              .status,
-              .requiresAttributes,
-              .compatibilities,
-              .registeredAt,
-              .registeredBy
-            )
+            .taskDefinition
+            | .containerDefinitions[0].image = $IMAGE
+            | del(
+                .taskDefinitionArn,
+                .revision,
+                .status,
+                .requiresAttributes,
+                .compatibilities,
+                .registeredAt,
+                .registeredBy
+              )
           ' task-definition.json > new-task-definition.json
 
       - name: Register new task definition
+        id: register-task
         run: |
           aws ecs register-task-definition \
             --cli-input-json file://new-task-definition.json
