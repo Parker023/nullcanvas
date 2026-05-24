@@ -58,26 +58,29 @@ jobs:
         run: |
           aws ecs describe-task-definition \
             --task-definition ${{ secrets.ECS_TASK_DEFINITION }} \
-            --query taskDefinition > task-definition.json
+            > task-definition.json
 
       - name: Prepare new task definition
         run: |
-          jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}" '
+          cat task-definition.json | jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}" '
             .taskDefinition
+            | {
+                family,
+                executionRoleArn,
+                networkMode,
+                containerDefinitions,
+                requiresCompatibilities,
+                cpu,
+                memory
+              }
             | .containerDefinitions[0].image = $IMAGE
-            | del(
-                .taskDefinitionArn,
-                .revision,
-                .status,
-                .requiresAttributes,
-                .compatibilities,
-                .registeredAt,
-                .registeredBy
-              )
-          ' task-definition.json > new-task-definition.json
+          ' > new-task-definition.json
 
-      - name: Register new task definition
-        id: register-task
+      - name: Debug new task definition
+        run: |
+          cat new-task-definition.json
+
+      - name: Register task definition
         run: |
           aws ecs register-task-definition \
             --cli-input-json file://new-task-definition.json
