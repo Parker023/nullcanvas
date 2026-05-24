@@ -62,9 +62,19 @@ jobs:
 
       - name: Update task definition image
         run: |
-          jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}" \
-          '.containerDefinitions[0].image=$IMAGE' \
-          task-definition.json > new-task-definition.json
+          jq --arg IMAGE "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}" '
+          .taskDefinition
+          | .containerDefinitions[0].image = $IMAGE
+          | del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            )
+          ' task-definition.json > new-task-definition.json
 
       - name: Register new task definition
         run: |
