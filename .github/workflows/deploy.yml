@@ -81,13 +81,28 @@ jobs:
           cat new-task-definition.json
 
       - name: Register task definition
+        id: register-task-def
         run: |
-          aws ecs register-task-definition \
-            --cli-input-json file://new-task-definition.json
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-definition.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+      - name: Debug task definition arn
+        run: |
+          echo $TASK_DEF_ARN
 
       - name: Deploy to ECS
         run: |
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
             --service ${{ secrets.ECS_SERVICE_NAME }} \
-            --force-new-deployment
+            --task-definition $TASK_DEF_ARN
+
+      - name: Wait for deployment stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
+            --services ${{ secrets.ECS_SERVICE_NAME }}
