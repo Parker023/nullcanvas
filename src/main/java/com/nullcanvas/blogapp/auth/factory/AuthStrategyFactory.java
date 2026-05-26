@@ -1,4 +1,4 @@
-package com.nullcanvas.blogapp.factory;
+package com.nullcanvas.blogapp.auth.factory;
 
 import com.nullcanvas.blogapp.auth.dto.AuthType;
 import com.nullcanvas.blogapp.auth.strategy.AuthenticationStrategy;

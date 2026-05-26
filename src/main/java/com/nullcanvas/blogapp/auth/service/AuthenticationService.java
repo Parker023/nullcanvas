@@ -3,7 +3,7 @@ package com.nullcanvas.blogapp.auth.service;
 import com.nullcanvas.blogapp.auth.dto.response.AuthenticationResponse;
 import com.nullcanvas.blogapp.auth.dto.request.AuthenticationRequest;
 import com.nullcanvas.blogapp.auth.strategy.AuthenticationStrategy;
-import com.nullcanvas.blogapp.factory.AuthStrategyFactory;
+import com.nullcanvas.blogapp.auth.factory.AuthStrategyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
