@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/register",
                                 "/test",
                                 "/oauth2/**",
-                                "/login/oauth2/**"
+                                "/login/oauth2/**",
+                                "/actuator/health"
                         )
                         .permitAll()
                         .anyRequest()

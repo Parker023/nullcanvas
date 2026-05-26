@@ -15,9 +15,6 @@ spring:
     init:
       mode: ALWAYS
   security:
-    user:
-      name: test
-      password: test
     oauth2:
       client:
         registration:
