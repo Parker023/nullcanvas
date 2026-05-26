@@ -14,11 +14,30 @@ spring:
   sql:
     init:
       mode: ALWAYS
+  security:
+    user:
+      name: test
+      password: test
+    oauth2:
+      client:
+        registration:
+
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+          github:
+            client-id: ${GHUB_CLIENT_ID}
+            client-secret: ${GHUB_CLIENT_SECRET}
+            scope:
+              - read:user
+              - user:email
 
 server:
   port: 2399
-  servlet:
-    context-path: /blog/mono
 
 management:
   endpoints:
@@ -28,3 +47,6 @@ management:
   endpoint:
     health:
       show-details: always
+
+app:
+  frontend-url: https://nullcanvas.blog
