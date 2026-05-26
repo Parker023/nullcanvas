@@ -47,3 +47,6 @@ management:
   endpoint:
     health:
       show-details: always
+
+app:
+  frontend-url: https://nullcanvas.blog
