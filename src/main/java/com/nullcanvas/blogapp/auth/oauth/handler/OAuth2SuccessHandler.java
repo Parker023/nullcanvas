@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -26,6 +27,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Value("${app.frontend-url}")
@@ -39,8 +41,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
 
         OAuth2User user = token.getPrincipal();
+        log.debug("Oauth request has come");
 
         String authorizedClientRegistrationId = token.getAuthorizedClientRegistrationId();
+
+        log.info("authorizedClientRegistrationId: {}", authorizedClientRegistrationId);
 
         AuthenticationRequest req = new OAuthAuthenticationRequest(user, ProviderType.fromString(authorizedClientRegistrationId));
 
