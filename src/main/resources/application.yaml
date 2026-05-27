@@ -47,4 +47,9 @@ management:
       show-details: always
 
 app:
-  frontend-url: https://nullcanvas.blog
+  frontend-url: https://nullcanvas.blog/auth/test
+
+logging:
+  level:
+    root: info
+    com.nullcanvas.blog: debug
