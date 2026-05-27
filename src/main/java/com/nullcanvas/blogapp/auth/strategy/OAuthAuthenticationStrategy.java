@@ -13,6 +13,7 @@ import com.nullcanvas.blogapp.auth.oauth.dto.OAuthUser;
 import com.nullcanvas.blogapp.auth.oauth.factory.OAuthUserAdapterFactory;
 import com.nullcanvas.blogapp.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.Optional;
  * @author Anirudh
  * @since 25/05/26
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
@@ -32,9 +34,12 @@ public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
+        log.debug("Inside OAuth strategy");
+
         OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
 
         OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.getProvider());
+        log.debug("Adapter selected: {}", adapter.getProviderType());
 
         OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.getOauth2User());
 
