@@ -5,7 +5,7 @@ package com.nullcanvas.blogapp.auth.dto;
  * @since 26/05/26
  */
 public enum ProviderType {
-    GOOGLE, GITHUB;
+    GOOGLE, GITHUB,LOCAL;
 
     public static ProviderType fromString(String type) {
         return switch (type.toLowerCase()) {
