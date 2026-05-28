@@ -1,6 +1,8 @@
 package com.nullcanvas.blogapp.auth.jwt;
 
 import com.nullcanvas.blogapp.auth.model.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -12,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Anirudh
@@ -45,6 +48,53 @@ public class JwtService {
                 .expiration(expiry)
                 .signWith(secretKey)
                 .compact();
+    }
+
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+
+            return false;
+        }
+
+    }
+
+    public UUID extractUserId(String token) {
+
+        Claims claims = extractClaims(token);
+
+        return UUID.fromString(claims.getSubject());
+    }
+
+    public boolean isTokenValid(String token) {
+
+        try {
+
+            extractClaims(token);
+
+            return true;
+
+        } catch (JwtException | IllegalArgumentException ex) {
+
+            return false;
+        }
+    }
+
+
+    public Claims extractClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
 }
