@@ -1,13 +1,19 @@
 package com.nullcanvas.blogapp.auth.security.configuration;
 
 import com.nullcanvas.blogapp.auth.oauth.handler.OAuth2SuccessHandler;
+import com.nullcanvas.blogapp.auth.security.entrypoint.JwtAuthenticationEntryPoint;
+import com.nullcanvas.blogapp.auth.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * @author Anirudh
@@ -19,6 +25,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final OAuth2SuccessHandler successHandler;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 
     @Bean
@@ -43,9 +51,21 @@ public class SecurityConfig {
                 )
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public StringRedisTemplate stringRedisTemplate() {
+        return new StringRedisTemplate();
     }
 
 }

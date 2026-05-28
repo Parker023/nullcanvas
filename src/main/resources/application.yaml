@@ -32,6 +32,23 @@ spring:
             scope:
               - read:user
               - user:email
+  mail:
+    host: smtp.resend.com
+    port: 587
+    username: resend
+    password: ${RESEND_API_KEY}
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 server:
   port: 2399
@@ -47,7 +64,20 @@ management:
       show-details: always
 
 app:
-  frontend-url: https://nullcanvas.blog/auth/test
+  frontend-url: https://nullcanvas.blog/auth/v1/test
+  otp:
+    otp-ttl: 5m
+    rate-limit:
+      window: 1h
+      max-req: 5
+      cooldown: 30s
+      attempt:
+        window: 5m
+        retries: 5
+  mail:
+    from: nullcanvas.admin@nullcanvas.blog
+
+
 
 logging:
   level:
