@@ -6,6 +6,7 @@ import com.nullcanvas.blogapp.auth.dto.request.LoginRequest;
 import com.nullcanvas.blogapp.auth.dto.response.AuthenticationResponse;
 import com.nullcanvas.blogapp.auth.service.AuthenticationService;
 import com.nullcanvas.blogapp.auth.service.UserRegistrationService;
+import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -81,6 +82,17 @@ public class AuthController {
     ) {
 
         registrationService.register(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .build();
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Void> verify(
+            @RequestBody VerifyEmailRequest request
+    ) {
+
+        registrationService.verifyEmail(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .build();

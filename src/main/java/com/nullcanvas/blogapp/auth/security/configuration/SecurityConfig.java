@@ -37,8 +37,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(
                                 "/login",
-                                "/register",
+                                "/auth/*/register",
                                 "/test",
+                                "/auth/*/verify-otp",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/actuator/health"
