@@ -6,6 +6,7 @@ import com.nullcanvas.blogapp.auth.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -64,8 +65,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public StringRedisTemplate stringRedisTemplate() {
-        return new StringRedisTemplate();
+    public StringRedisTemplate stringRedisTemplate(
+            RedisConnectionFactory connectionFactory) {
+        return new StringRedisTemplate(connectionFactory);
     }
 
 }
