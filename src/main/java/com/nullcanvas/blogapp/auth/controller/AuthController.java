@@ -70,7 +70,7 @@ public class AuthController {
 
         response.addHeader(
                 HttpHeaders.SET_COOKIE,
-                new Cookie(ACCESS_TOKEN, authResponse.getToken()).toString()
+                cookie.toString()
         );
 
         return ResponseEntity.ok().build();
