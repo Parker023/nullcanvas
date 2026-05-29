@@ -36,13 +36,11 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(
-                                "/login",
-                                "/auth/*/register",
-                                "/test",
-                                "/auth/*/verify-otp",
+                                "/auth/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/error"
                         )
                         .permitAll()
                         .anyRequest()
