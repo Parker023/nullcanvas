@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class OtpService {
 
-    @Value("${app.otp-ttl}")
+    @Value("${app.otp.otp-ttl}")
     private Duration ttl;
 
     private static final String PREFIX = "auth:email-verification:";
