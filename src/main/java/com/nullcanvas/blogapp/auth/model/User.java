@@ -19,7 +19,7 @@ import lombok.Setter;
  * @since 26/05/26
  */
 @Entity
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"providerType", "providerUserId"})})
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor

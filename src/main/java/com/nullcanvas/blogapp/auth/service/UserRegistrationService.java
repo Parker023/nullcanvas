@@ -84,7 +84,7 @@ public class UserRegistrationService {
                 .email(request.email())
                 .providerType(ProviderType.LOCAL)
                 .profileImageUrl(null)
-                .providerUserId(null)
+                .providerUserId("0")
                 .build();
     }
 }

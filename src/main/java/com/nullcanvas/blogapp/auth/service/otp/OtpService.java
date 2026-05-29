@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -56,16 +57,12 @@ public class OtpService {
                 ttl
         );
 
-        emailService.sendVerificationOtp(
-                email,
-                otp
-        );
-
-        log.info(
-                "Verification OTP sent to {}",
-                email
-        );
-
+        CompletableFuture.runAsync(() -> {
+            emailService.sendVerificationOtp(
+                    email,
+                    otp
+            );
+        });
 
     }
 
