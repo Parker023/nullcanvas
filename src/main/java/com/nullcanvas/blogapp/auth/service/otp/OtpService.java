@@ -4,6 +4,7 @@ import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
 import com.nullcanvas.blogapp.auth.exception.TooManyOtpRequestException;
 import com.nullcanvas.blogapp.auth.service.EmailService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,14 @@ public class OtpService {
 
     @Value("${app.otp.otp-ttl}")
     private Duration ttl;
+
+    @Value("${spring.data.redis.host:NOT_SET}")
+    private String redisHost;
+
+    @PostConstruct
+    public void init() {
+        log.info("Redis host = {}", redisHost);
+    }
 
     private static final String PREFIX = "auth:email-verification:";
 
