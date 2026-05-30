@@ -1,7 +1,7 @@
 package com.nullcanvas.blogapp.auth.service;
 
 import com.nullcanvas.blogapp.auth.dto.ProviderType;
-import com.nullcanvas.blogapp.auth.dto.RegisterRequest;
+import com.nullcanvas.blogapp.auth.dto.request.RegisterRequest;
 import com.nullcanvas.blogapp.auth.dto.Role;
 import com.nullcanvas.blogapp.auth.exception.InvalidOtpException;
 import com.nullcanvas.blogapp.auth.exception.UserAlreadyExistsException;

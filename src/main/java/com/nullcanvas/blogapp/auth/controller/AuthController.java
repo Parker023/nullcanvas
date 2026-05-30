@@ -1,13 +1,12 @@
 package com.nullcanvas.blogapp.auth.controller;
 
-import com.nullcanvas.blogapp.auth.dto.RegisterRequest;
 import com.nullcanvas.blogapp.auth.dto.request.JwtAuthenticationRequest;
 import com.nullcanvas.blogapp.auth.dto.request.LoginRequest;
+import com.nullcanvas.blogapp.auth.dto.request.RegisterRequest;
 import com.nullcanvas.blogapp.auth.dto.response.AuthenticationResponse;
 import com.nullcanvas.blogapp.auth.service.AuthenticationService;
 import com.nullcanvas.blogapp.auth.service.UserRegistrationService;
 import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
