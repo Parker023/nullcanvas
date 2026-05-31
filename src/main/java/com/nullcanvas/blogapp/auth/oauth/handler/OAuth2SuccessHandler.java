@@ -59,7 +59,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         response.addCookie(cookie);
 
-        response.sendRedirect(frontendUrl);
+        response.sendRedirect(frontendUrl+"/oauth-success");
 
 
     }
