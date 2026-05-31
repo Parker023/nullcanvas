@@ -20,4 +20,7 @@ public class AuthenticationAppUtil {
     }
 
 
+    public boolean matches(String rawValue, String encodedValue) {
+        return passwordEncoder.matches(rawValue, encodedValue);
+    }
 }
