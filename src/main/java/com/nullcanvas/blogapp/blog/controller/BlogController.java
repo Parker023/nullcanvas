@@ -41,4 +41,14 @@ public class BlogController {
                 .status(HttpStatus.CREATED)
                 .build();
     }
+
+    @PostMapping("/chunk")
+    public ResponseEntity<Void> insertChunk(@RequestBody BlogMetadataRequest metadataRequest) {
+
+        blogService.saveMetadata(metadataRequest);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
 }

@@ -47,6 +47,9 @@ public class OtpService {
             String email
     ) throws CoolDownException {
 
+
+        //TODO remove entries where email is not verified after 1 hr from createdDatetime
+
         validateOtpRequest(email);
 
         String otp = generateOtp();
