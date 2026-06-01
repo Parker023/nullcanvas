@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter
 @RequiredArgsConstructor
 public class CustomUserPrincipal implements UserDetails {
-    private final UUID userId;
+    private final UUID userPublicId;
 
     private final String email;
 

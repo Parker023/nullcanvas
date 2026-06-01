@@ -7,5 +7,5 @@ import lombok.Builder;
  * @since 31/05/26
  */
 @Builder
-public record ExceptionResponse(String message, int status) {
+public record ExceptionResponse(String message) {
 }
