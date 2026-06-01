@@ -24,11 +24,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> coolDownException(CoolDownException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.TOO_MANY_REQUESTS.value())
                 .message("please try after 30 sec")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
     }
 
@@ -36,11 +35,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> invalidCredentialsException(InvalidCredentialsException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
                 .message("Email or password does not match")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 
     }
 
@@ -48,11 +46,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> invalidOtpException(InvalidOtpException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
                 .message("Otp does not match or expired")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 
     }
 
@@ -60,11 +57,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> tooManyFailedOtpVerificationException(TooManyFailedOtpVerificationException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.TOO_MANY_REQUESTS.value())
                 .message("Too many failed attempts, please try after sometime")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
     }
 
@@ -72,11 +68,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> tooManyOtpRequestException(TooManyOtpRequestException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.TOO_MANY_REQUESTS.value())
                 .message("Too many attempts, please try after sometime")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
     }
 
@@ -84,11 +79,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> userAlreadyExistsException(UserAlreadyExistsException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.CONFLICT.value())
                 .message("User already exists with this username or email")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 
     }
 
@@ -96,11 +90,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> userNotRegisteredException(UserNotRegisteredException exception) {
 
         ExceptionResponse response = ExceptionResponse.builder()
-                .status(HttpStatus.NOT_FOUND.value())
                 .message("User Not found with this email")
                 .build();
 
-        return ResponseEntity.ofNullable(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 
     }
 
