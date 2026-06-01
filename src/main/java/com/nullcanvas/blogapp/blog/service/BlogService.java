@@ -9,6 +9,7 @@ import com.nullcanvas.blogapp.blog.util.BlogAppUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ public class BlogService {
     private final BlogAppUtil appUtil;
     private final BlogRepository blogRepository;
     private AuthUtil authUtil;
+    private SlugGeneratorService slugGeneratorService;
 
     public UUID generateBlogPublicId() {
         UUID blogPublicId = appUtil.generateRandomUUID();
@@ -30,17 +32,24 @@ public class BlogService {
         return blogPublicId;
     }
 
+    @Transactional
     public void saveMetadata(BlogMetadataRequest metadataRequest) {
+
+        Blog blogWithMetadata = prepareBlog(metadataRequest);
+
+        blogRepository.save(blogWithMetadata);
 
     }
 
     private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
-        Blog.builder()
+        return Blog.builder()
                 .title(metadataRequest.getTitle())
                 .summary(metadataRequest.getSummary())
                 .authorPublicId(authUtil.getAuthorIdFromSecurityContext())
                 .coverImageUrl(metadataRequest.getCoverImageUrl())
                 .visibility(Visibility.fromString(metadataRequest.getVisibility()))
-                .slug()
+                .slug(slugGeneratorService.generate(metadataRequest.getTitle()))
+                .build();
+
     }
 }
