@@ -4,6 +4,8 @@ import com.nullcanvas.blogapp.auth.dto.request.JwtAuthenticationRequest;
 import com.nullcanvas.blogapp.auth.dto.request.LoginRequest;
 import com.nullcanvas.blogapp.auth.dto.request.RegisterRequest;
 import com.nullcanvas.blogapp.auth.dto.response.AuthenticationResponse;
+import com.nullcanvas.blogapp.auth.dto.response.CurrentUserResponse;
+import com.nullcanvas.blogapp.auth.security.principal.CustomUserPrincipal;
 import com.nullcanvas.blogapp.auth.service.AuthenticationService;
 import com.nullcanvas.blogapp.auth.service.UserRegistrationService;
 import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Objects;
 
 import static com.nullcanvas.blogapp.auth.constants.AuthConstants.ACCESS_TOKEN;
 
@@ -50,7 +55,7 @@ public class AuthController {
 
         JwtAuthenticationRequest authRequest =
                 new JwtAuthenticationRequest(
-                        request.getUsernameOrEmail(),
+                        request.getEmail(),
                         request.getPassword()
                 );
 
@@ -86,16 +91,7 @@ public class AuthController {
                 .build();
     }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<Void> verify(
-            @RequestBody VerifyEmailRequest request
-    ) {
 
-        registrationService.verifyEmail(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .build();
-    }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
@@ -116,6 +112,32 @@ public class AuthController {
                 cookie.toString()
         );
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserResponse> me(
+            Authentication authentication
+    ) {
+
+        if (authentication == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
+
+        CustomUserPrincipal user =
+                (CustomUserPrincipal) authentication.getPrincipal();
+
+        return ResponseEntity.ok(
+                CurrentUserResponse.builder()
+                        .name(Objects.requireNonNull(user).getUsername())
+                        .email(user.getEmail())
+                        .roles(user.getAuthorities()
+                                .stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .toList())
+                        .build()
+        );
     }
 
 }

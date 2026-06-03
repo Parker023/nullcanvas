@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,6 @@ public class UserResponse {
     private UUID publicId;
     private String name;
     private String email;
-    private Role role;
+    private List<Role> roles;
     private String profileImageUrl;
 }

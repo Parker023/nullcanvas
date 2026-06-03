@@ -1,6 +1,7 @@
 package com.nullcanvas.blogapp.blog.controller;
 
 import com.nullcanvas.blogapp.blog.dto.request.BlogMetadataRequest;
+import com.nullcanvas.blogapp.blog.dto.request.ChunkRequest;
 import com.nullcanvas.blogapp.blog.service.BlogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,9 +44,8 @@ public class BlogController {
     }
 
     @PostMapping("/chunk")
-    public ResponseEntity<Void> insertChunk(@RequestBody BlogMetadataRequest metadataRequest) {
+    public ResponseEntity<Void> insertChunk(@RequestBody ChunkRequest chunkRequest) {
 
-        blogService.saveMetadata(metadataRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

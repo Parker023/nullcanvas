@@ -20,5 +20,6 @@ public class BlogMetadataRequest {
     private String coverImageUrl;
     private String visibility;
     private List<String> tags;
+    private String status;
 
 }

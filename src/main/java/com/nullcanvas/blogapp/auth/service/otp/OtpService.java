@@ -4,6 +4,7 @@ import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
 import com.nullcanvas.blogapp.auth.exception.TooManyOtpRequestException;
 import com.nullcanvas.blogapp.auth.service.EmailService;
+import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,5 +127,17 @@ public class OtpService {
         if (!otpRateLimitService.isAllowed(email)) {
             throw new TooManyOtpRequestException();
         }
+    }
+
+    public void resendOtp(VerifyEmailRequest request) {
+
+        Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
+
+        log.info("otp resent for {}", request.email());
+        if (otpPresent)
+            redisTemplate.delete(PREFIX + request.email());
+
+        sendVerificationOtp(request.email());
+
     }
 }

@@ -1,6 +1,7 @@
 package com.nullcanvas.blogapp.blog.service;
 
 import com.nullcanvas.blogapp.blog.BlogRepository;
+import com.nullcanvas.blogapp.blog.dto.BlogStatus;
 import com.nullcanvas.blogapp.blog.dto.Visibility;
 import com.nullcanvas.blogapp.blog.dto.request.BlogMetadataRequest;
 import com.nullcanvas.blogapp.blog.model.Blog;
@@ -49,7 +50,10 @@ public class BlogService {
                 .coverImageUrl(metadataRequest.getCoverImageUrl())
                 .visibility(Visibility.fromString(metadataRequest.getVisibility()))
                 .slug(slugGeneratorService.generate(metadataRequest.getTitle()))
+                .status(BlogStatus.fromString(metadataRequest.getStatus()))
                 .build();
 
     }
+
+
 }
