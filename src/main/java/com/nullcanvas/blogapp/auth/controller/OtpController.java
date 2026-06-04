@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.auth.controller;
 
+import com.nullcanvas.blogapp.auth.dto.request.ResendOtpRequest;
 import com.nullcanvas.blogapp.auth.service.UserRegistrationService;
 import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import com.nullcanvas.blogapp.auth.service.otp.OtpService;
@@ -34,7 +35,8 @@ public class OtpController {
                 .build();
     }
 
-    public ResponseEntity<Void> resendOtp(@RequestBody @Valid VerifyEmailRequest request) {
+    @PostMapping("/resend-otp")
+    public ResponseEntity<Void> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
         otpService.resendOtp(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .build();

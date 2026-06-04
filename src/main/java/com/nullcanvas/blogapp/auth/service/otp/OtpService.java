@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.auth.service.otp;
 
+import com.nullcanvas.blogapp.auth.dto.request.ResendOtpRequest;
 import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
 import com.nullcanvas.blogapp.auth.exception.TooManyOtpRequestException;
@@ -129,11 +130,11 @@ public class OtpService {
         }
     }
 
-    public void resendOtp(VerifyEmailRequest request) {
+    public void resendOtp(ResendOtpRequest request) {
 
         Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
 
-        log.info("otp resent for {}", request.email());
+        log.info("otp re-sending for {}", request.email());
         if (otpPresent)
             redisTemplate.delete(PREFIX + request.email());
 
