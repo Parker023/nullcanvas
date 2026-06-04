@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -86,7 +87,7 @@ public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
                 .email(user.getEmail())
                 .publicId(user.getPublicId())
                 .profileImageUrl(user.getProfileImageUrl())
-                .role(user.getRole())
+                .roles(List.of(user.getRole()))
                 .name(user.getName())
                 .build();
 

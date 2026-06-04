@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,7 +39,7 @@ public class JwtAuthenticationStrategy implements AuthenticationStrategy {
 
         User user = userRepository
                 .findByEmail(jwtAuthenticationRequest
-                        .getUsernameOrEmail())
+                        .getEmail())
                 .orElseThrow(UserNotRegisteredException::new);
 
         if (Objects.isNull(user.getPassword()))
@@ -66,7 +67,7 @@ public class JwtAuthenticationStrategy implements AuthenticationStrategy {
     private AuthenticationResponse prepareResponse(String token, User user) {
         UserResponse userResponse = UserResponse.builder()
                 .name(user.getName())
-                .role(user.getRole())
+                .roles(List.of(user.getRole()))
                 .profileImageUrl(user.getProfileImageUrl())
                 .publicId(user.getPublicId())
                 .email(user.getEmail())

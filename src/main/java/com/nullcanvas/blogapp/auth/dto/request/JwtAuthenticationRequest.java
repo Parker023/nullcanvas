@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class JwtAuthenticationRequest implements AuthenticationRequest {
 
-    private final String usernameOrEmail;
+    private final String email;
     private final String password;
 
     @Override
