@@ -35,7 +35,7 @@ public class FullRequestStrategy implements BlogContentHandleStrategy {
 
         if (!(contentRequest instanceof FullContentRequest(String content)))
             throw new InvalidRequestTypeException();
-        Blog blog = blogRepository.findByBlogPublicId(blogPublicId)
+        Blog blog = blogRepository.findByPublicId(blogPublicId)
                 .orElseThrow(BlogNotFoundException::new);
 
         Blog updated = blog.toBuilder()

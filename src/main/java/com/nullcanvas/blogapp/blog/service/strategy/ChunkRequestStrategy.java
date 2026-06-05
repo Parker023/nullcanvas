@@ -53,7 +53,7 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
             List<ChunkStore> chunkStores = chunkStoreRepository.findAllByBlogPublicId(blogPublicId);
             String assembledContent = assembleChunks(chunkStores);
 
-            Blog blog = blogRepository.findByBlogPublicId(blogPublicId)
+            Blog blog = blogRepository.findByPublicId(blogPublicId)
                     .orElseThrow(BlogNotFoundException::new);
 
             Blog updatedBlog = blog.toBuilder()
