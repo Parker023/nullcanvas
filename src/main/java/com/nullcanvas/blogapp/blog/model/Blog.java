@@ -29,7 +29,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Blog extends BaseEntity {
 
     @Column(name = "author_id", nullable = false)

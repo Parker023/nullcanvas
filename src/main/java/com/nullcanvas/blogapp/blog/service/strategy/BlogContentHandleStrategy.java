@@ -1,6 +1,9 @@
 package com.nullcanvas.blogapp.blog.service.strategy;
 
 import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
+import com.nullcanvas.blogapp.blog.dto.request.BlogContentRequest;
+
+import java.util.UUID;
 
 /**
  * @author Anirudh
@@ -10,6 +13,6 @@ public interface BlogContentHandleStrategy {
 
     ContentHandleType getContentHandleType();
 
-    void handleInsert();
+    void handle(BlogContentRequest contentRequest, UUID blogPublicId);
 
 }

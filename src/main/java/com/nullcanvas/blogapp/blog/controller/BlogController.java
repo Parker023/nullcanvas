@@ -1,12 +1,15 @@
 package com.nullcanvas.blogapp.blog.controller;
 
 import com.nullcanvas.blogapp.blog.dto.request.BlogMetadataRequest;
-import com.nullcanvas.blogapp.blog.dto.request.ChunkRequest;
-import com.nullcanvas.blogapp.blog.service.BlogService;
+import com.nullcanvas.blogapp.blog.dto.request.ChunkContentRequest;
+import com.nullcanvas.blogapp.blog.dto.request.FullContentRequest;
+import com.nullcanvas.blogapp.blog.dto.response.MetadataResponse;
+import com.nullcanvas.blogapp.blog.service.BlogContentHandlerService;
+import com.nullcanvas.blogapp.blog.service.BlogMetadataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,30 +26,31 @@ import java.util.UUID;
 @RequestMapping("/blog/v1")
 public class BlogController {
 
-    private final BlogService blogService;
-
-    @GetMapping("/init")
-    public ResponseEntity<UUID> getBlogPublicId() {
-
-        UUID blogPublicId = blogService.generateBlogPublicId();
-        return ResponseEntity.ok(blogPublicId);
-
-    }
+    private final BlogMetadataService blogMetadataService;
+    private final BlogContentHandlerService contentHandlerService;
 
     @PostMapping("/metadata")
-    public ResponseEntity<Void> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
+    public ResponseEntity<MetadataResponse> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
 
-        blogService.saveMetadata(metadataRequest);
+        MetadataResponse metadataResponse = blogMetadataService.saveMetadata(metadataRequest);
+
+        return ResponseEntity
+                .ok(metadataResponse);
+    }
+
+    @PostMapping("/{blogPublicId}/chunk")
+    public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
+        contentHandlerService.handleContent(chunkContentRequest,blogPublicId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .build();
     }
 
-    @PostMapping("/chunk")
-    public ResponseEntity<Void> insertChunk(@RequestBody ChunkRequest chunkRequest) {
+    @PostMapping("/{blogPublicId}/content")
+    public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
 
-
+        contentHandlerService.handleContent(fullContentRequest,blogPublicId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .build();

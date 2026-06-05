@@ -41,10 +41,10 @@ public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
 
         OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
 
-        OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.getProvider());
+        OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.provider());
         log.debug("Adapter selected: {}", adapter.getProviderType());
 
-        OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.getOauth2User());
+        OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.oauth2User());
 
         Optional<User> optionalUser = userRepository.findByEmail(oAuthUser.getEmail());
 
