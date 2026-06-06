@@ -9,6 +9,7 @@ import com.nullcanvas.blogapp.blog.service.BlogMetadataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +41,7 @@ public class BlogController {
 
     @PostMapping("/{blogPublicId}/chunk")
     public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
-        contentHandlerService.handleContent(chunkContentRequest,blogPublicId);
+        contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -50,9 +51,21 @@ public class BlogController {
     @PostMapping("/{blogPublicId}/content")
     public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
 
-        contentHandlerService.handleContent(fullContentRequest,blogPublicId);
+        contentHandlerService.handleContent(fullContentRequest, blogPublicId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .build();
     }
+
+    @GetMapping("/{blogPublicId}")
+    public ResponseEntity<Void> getBlog(@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+
+
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
+
+
 }

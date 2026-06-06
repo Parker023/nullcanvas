@@ -1,6 +1,5 @@
 package com.nullcanvas.blogapp.blog.service.strategy;
 
-import com.nullcanvas.blogapp.blog.dto.BlogStatus;
 import com.nullcanvas.blogapp.blog.repository.BlogRepository;
 import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
 import com.nullcanvas.blogapp.blog.dto.request.BlogContentRequest;
@@ -12,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 import java.util.UUID;
 
@@ -33,18 +33,16 @@ public class FullRequestStrategy implements BlogContentHandleStrategy {
     @Override
     public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
 
-        if (!(contentRequest instanceof FullContentRequest(String content)))
+        if (!(contentRequest instanceof FullContentRequest( JsonNode content)))
             throw new InvalidRequestTypeException();
         Blog blog = blogRepository.findByPublicId(blogPublicId)
                 .orElseThrow(BlogNotFoundException::new);
 
-        Blog updated = blog.toBuilder()
-                .contentJson(content)
-                .contentSize((long) StringUtils.length(content))
-                .status(BlogStatus.DRAFT)
-                .build();
 
-        blogRepository.save(updated);
+        blog.setContentJson(content.toString());
+        blog.setContentSize((long) StringUtils.length(content.toString()));
+
+        blogRepository.save(blog);
 
 
     }

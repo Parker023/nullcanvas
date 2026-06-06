@@ -23,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BlogMetadataService {
     private final BlogAppUtil appUtil;
     private final BlogRepository blogRepository;
-    private AuthUtil authUtil;
-    private SlugGeneratorService slugGeneratorService;
+    private final AuthUtil authUtil;
+    private final SlugGeneratorService slugGeneratorService;
 
     @Transactional
     public MetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {

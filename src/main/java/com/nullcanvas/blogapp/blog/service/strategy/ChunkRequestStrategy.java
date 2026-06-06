@@ -3,21 +3,23 @@ package com.nullcanvas.blogapp.blog.service.strategy;
 import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
 import com.nullcanvas.blogapp.blog.dto.request.BlogContentRequest;
 import com.nullcanvas.blogapp.blog.dto.request.ChunkContentRequest;
-import com.nullcanvas.blogapp.blog.exception.BlogNotFoundException;
+import com.nullcanvas.blogapp.blog.dto.request.FullContentRequest;
 import com.nullcanvas.blogapp.blog.exception.InvalidRequestTypeException;
-import com.nullcanvas.blogapp.blog.model.Blog;
 import com.nullcanvas.blogapp.blog.model.ChunkStore;
 import com.nullcanvas.blogapp.blog.repository.BlogRepository;
 import com.nullcanvas.blogapp.blog.repository.ChunkStoreRepository;
 import com.nullcanvas.blogapp.blog.service.BlogMetadataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Anirudh
@@ -30,6 +32,7 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
     private final ChunkStoreRepository chunkStoreRepository;
     private final BlogMetadataService blogMetadataService;
     private final BlogRepository blogRepository;
+    private final FullRequestStrategy fullRequestStrategy;
 
     @Override
     public ContentHandleType getContentHandleType() {
@@ -51,19 +54,21 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
 
         if (savedChunk.isFinalChunk()) {
             List<ChunkStore> chunkStores = chunkStoreRepository.findAllByBlogPublicId(blogPublicId);
-            String assembledContent = assembleChunks(chunkStores);
+            JsonNode assembledContent = assembleChunks(chunkStores);
 
-            Blog blog = blogRepository.findByPublicId(blogPublicId)
-                    .orElseThrow(BlogNotFoundException::new);
-
-            Blog updatedBlog = blog.toBuilder()
-                    .contentJson(assembledContent)
-                    .contentSize((long) StringUtils.length(assembledContent))
+            log.info("{} chunks for {} aggregated", chunkStores.size(), blogPublicId);
+            FullContentRequest fullContentRequest = FullContentRequest.builder()
+                    .content(assembledContent)
                     .build();
+            fullRequestStrategy.handle(fullContentRequest, blogPublicId);
 
-            blogRepository.save(updatedBlog);
+            cleanUpChunkStores(blogPublicId);
 
         }
+    }
+
+    private void cleanUpChunkStores(UUID blogPublicId) {
+        chunkStoreRepository.deleteByBlogPublicId(blogPublicId);
     }
 
     private ChunkStore prepareChunkStore(ChunkContentRequest contentRequest, UUID blogPublicId) {
@@ -71,15 +76,24 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
                 .blogPublicId(blogPublicId)
                 .isFinalChunk(contentRequest.isFinalChunk())
                 .chunkSeq(contentRequest.chunkSeq())
+                .chunk(contentRequest.chunk())
                 .build();
     }
 
-    private String assembleChunks(List<ChunkStore> chunks) {
+    private JsonNode assembleChunks(List<ChunkStore> chunks) {
 
-        StringBuilder contentHolder = new StringBuilder();
-        chunks.stream()
+        String content = chunks.stream()
                 .map(ChunkStore::getChunk)
-                .forEach(contentHolder::append);
-        return contentHolder.toString();
+                .collect(Collectors.joining());
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode contentNode =
+                mapper.createObjectNode();
+
+        contentNode.put(
+                "content",
+                content
+        );
+        return contentNode;
     }
 }
