@@ -39,13 +39,13 @@ public class JwtAuthenticationStrategy implements AuthenticationStrategy {
 
         User user = userRepository
                 .findByEmail(jwtAuthenticationRequest
-                        .getEmail())
+                        .email())
                 .orElseThrow(UserNotRegisteredException::new);
 
         if (Objects.isNull(user.getPassword()))
             throw new UserNotRegisteredException();
 
-        boolean passwordMatch = appUtil.matches(jwtAuthenticationRequest.getPassword(), user.getPassword());
+        boolean passwordMatch = appUtil.matches(jwtAuthenticationRequest.password(), user.getPassword());
 
         if (!passwordMatch) {
             throw new InvalidCredentialsException();

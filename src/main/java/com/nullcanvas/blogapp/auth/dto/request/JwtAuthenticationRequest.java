@@ -8,12 +8,8 @@ import lombok.RequiredArgsConstructor;
  * @author Anirudh
  * @since 26/05/26
  */
-@RequiredArgsConstructor
-@Getter
-public class JwtAuthenticationRequest implements AuthenticationRequest {
 
-    private final String email;
-    private final String password;
+public record JwtAuthenticationRequest(String email, String password) implements AuthenticationRequest {
 
     @Override
     public AuthType getAuthType() {

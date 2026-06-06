@@ -20,7 +20,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TagStore extends BaseEntity {
+public class Tag extends BaseEntity {
     @Column(name = "tag_name", nullable = false, unique = true)
     private String name;
 }

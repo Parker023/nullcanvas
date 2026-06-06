@@ -10,12 +10,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
  * @author Anirudh
  * @since 26/05/26
  */
-@RequiredArgsConstructor
-@Getter
-public class OAuthAuthenticationRequest implements AuthenticationRequest {
 
-    private final OAuth2User oauth2User;
-    private final ProviderType provider;
+public record OAuthAuthenticationRequest(OAuth2User oauth2User,
+                                         ProviderType provider) implements AuthenticationRequest {
 
     @Override
     public AuthType getAuthType() {
