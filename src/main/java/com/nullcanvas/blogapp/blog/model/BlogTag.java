@@ -13,6 +13,13 @@ import lombok.Setter;
 import java.util.UUID;
 
 /**
+ * Join entity linking a {@link Blog} to a {@link Tag} (many-to-many association row).
+ *
+ * <p>
+ * The unique constraint on (blog, tag) prevents the same tag from being attached to a
+ * blog twice.
+ * </p>
+ *
  * @author Anirudh
  * @since 01/06/26
  */
@@ -26,9 +33,11 @@ import java.util.UUID;
 @NoArgsConstructor
 public class BlogTag extends BaseEntity {
 
+	/** Public id of the associated blog. */
 	@Column(name = "blog_public_id", nullable = false)
 	private UUID blogPublicId;
 
+	/** Public id of the associated tag. */
 	@Column(name = "tag_public_id", nullable = false)
 	private UUID tagPublicId;
 

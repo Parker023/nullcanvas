@@ -8,12 +8,19 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
+ * Spring Data repository for {@link Blog} entities.
+ *
  * @author Anirudh
  * @since 01/06/26
  */
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
 
+	/**
+	 * Finds a blog by its public id.
+	 * @param blogPublicId the public id to look up
+	 * @return the matching blog, or empty if none exists
+	 */
 	Optional<Blog> findByPublicId(UUID blogPublicId);
 
 }

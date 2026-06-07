@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
+ * Spring Data repository for {@link BlogTag} join rows; provides standard CRUD.
+ *
  * @author Anirudh
  * @since 05/06/26
  */

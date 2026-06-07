@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
+ * Public-facing view of a user account, free of sensitive fields like the password hash.
+ *
  * @author Anirudh
  * @since 26/05/26
  */
@@ -20,14 +22,22 @@ import java.util.UUID;
 @Getter
 public class UserResponse {
 
+	/**
+	 * Stable, externally-shareable identifier for the user (not the database primary
+	 * key).
+	 */
 	private UUID publicId;
 
+	/** The user's display name. */
 	private String name;
 
+	/** The user's email address. */
 	private String email;
 
+	/** The roles granted to the user. */
 	private List<Role> roles;
 
+	/** URL of the user's avatar image, if any. */
 	private String profileImageUrl;
 
 }
