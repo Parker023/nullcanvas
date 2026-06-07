@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Content strategy that persists a blog's body as incremental chunks.
+ * Content strategy that persists in a blog's body as incremental chunks.
  *
  * <p>
  * Each chunk is stored as it arrives. When the final chunk is received, all chunks are
@@ -85,7 +85,7 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
 
 		ChunkStore savedChunk = chunkStoreRepository.saveAndFlush(chunkStore);
 
-		// Only once the final chunk lands do we have the whole body to assemble.
+		// Only once the final chunk lands, do we have the whole body to assemble.
 		if (savedChunk.isFinalChunk()) {
 			// Read every chunk back in sequence order and concatenate them.
 			List<ChunkStore> chunkStores = chunkStoreRepository.findAllByBlogPublicId(blogPublicId);
@@ -132,7 +132,7 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
 	 */
 	private JsonNode assembleChunks(List<ChunkStore> chunks) {
 
-		// Join the chunk strings in their existing (sequence) order to rebuild the body.
+		// Join the chunk strings in their existing (sequence) to rebuild the body.
 		String content = chunks.stream().map(ChunkStore::getChunk).collect(Collectors.joining());
 
 		// Wrap the assembled text in a JSON object so it matches the blog's JSONB content

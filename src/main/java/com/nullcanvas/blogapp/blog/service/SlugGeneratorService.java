@@ -38,7 +38,7 @@ public class SlugGeneratorService {
 
 		// Tracks whether any real (alphanumeric) character was seen at all.
 		boolean charsPresent = false;
-		// Normalise case and surrounding whitespace before scanning.
+		// Normalize case and surrounding whitespace before scanning.
 		title = title.toLowerCase().trim();
 		for (char c : title.toCharArray()) {
 

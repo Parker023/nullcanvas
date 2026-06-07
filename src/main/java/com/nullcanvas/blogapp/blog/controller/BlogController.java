@@ -23,7 +23,7 @@ import java.util.UUID;
  *
  * <p>
  * Blog creation is split into two phases: first the metadata (title, tags, visibility) is
- * saved to obtain a public id, then the body is uploaded either as incremental chunks or
+ * saved to get a public id, then the body is uploaded either as incremental chunks or
  * as a single full payload. Content uploads are routed through
  * {@link BlogContentHandlerService}, which selects the appropriate handling strategy
  * based on the request type.
@@ -69,7 +69,7 @@ public class BlogController {
 	 */
 	@PostMapping("/{blogPublicId}/chunk")
 	public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest,
-			@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+                                            @PathVariable UUID blogPublicId) {
 		// Delegate to the handler, which picks the chunk strategy based on the request
 		// type.
 		contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
@@ -85,7 +85,7 @@ public class BlogController {
 	 */
 	@PostMapping("/{blogPublicId}/content")
 	public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest,
-			@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+                                                  @PathVariable UUID blogPublicId) {
 
 		// Delegate to the handler, which picks the full-content strategy based on the
 		// request type.
@@ -99,7 +99,7 @@ public class BlogController {
 	 * @return the blog response (retrieval logic not yet implemented)
 	 */
 	@GetMapping("/{blogPublicId}")
-	public ResponseEntity<Void> getBlog(@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+	public ResponseEntity<Void> getBlog(@PathVariable UUID blogPublicId) {
 
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}

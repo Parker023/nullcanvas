@@ -37,7 +37,7 @@ public class BlogContentHandlerService {
 	 * @param blogPublicId the blog the content belongs to
 	 */
 	public void handleContent(BlogContentRequest request, UUID blogPublicId) {
-		// Pick the strategy (chunk vs full) based on the request's declared handle type.
+		// Pick the strategy (chunk vs. full) based on the request's declared handle type.
 		BlogContentHandleStrategy contentHandlerStrategy = blogContentHandlerStrategyFactory
 			.getContentHandlerStrategy(request.getContentHandleType());
 		// Delegate the actual persistence to the chosen strategy.
