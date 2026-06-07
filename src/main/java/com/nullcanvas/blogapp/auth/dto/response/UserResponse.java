@@ -20,9 +20,14 @@ import java.util.UUID;
 @Getter
 public class UserResponse {
 
-    private UUID publicId;
-    private String name;
-    private String email;
-    private List<Role> roles;
-    private String profileImageUrl;
+	private UUID publicId;
+
+	private String name;
+
+	private String email;
+
+	private List<Role> roles;
+
+	private String profileImageUrl;
+
 }

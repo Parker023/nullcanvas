@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,29 +26,30 @@ import lombok.Setter;
 @Builder
 public class User extends BaseEntity {
 
-    @Column(unique = true)
-    private String email;
+	@Column(unique = true)
+	private String email;
 
-    @Column(nullable = false)
-    private String name;
+	@Column(nullable = false)
+	private String name;
 
-    @Column
-    private String password;
+	@Column
+	private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProviderType providerType;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ProviderType providerType;
 
-    @Column(nullable = false)
-    private String providerUserId;
+	@Column(nullable = false)
+	private String providerUserId;
 
-    @Column
-    private String profileImageUrl;
+	@Column
+	private String profileImageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private Role role;
 
-    @Column(nullable = false)
-    private boolean emailVerified;
+	@Column(nullable = false)
+	private boolean emailVerified;
+
 }

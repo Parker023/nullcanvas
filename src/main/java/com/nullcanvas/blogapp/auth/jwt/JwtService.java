@@ -23,78 +23,68 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
-    @Value("${JWT_SECRET}")
-    private String jwtSecret;
-    private SecretKey secretKey;
+	@Value("${JWT_SECRET}")
+	private String jwtSecret;
 
-    @PostConstruct
-    public void setSecretKey() {
-        secretKey = Keys.hmacShaKeyFor(
-                jwtSecret.getBytes(StandardCharsets.UTF_8)
-        );
-    }
+	private SecretKey secretKey;
 
+	@PostConstruct
+	public void setSecretKey() {
+		secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+	}
 
-    public String generateToken(User user) {
-        Date now = Date.from(Instant.now());
-        Date expiry = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
-        return Jwts
-                .builder()
-                .subject(user.getPublicId().toString())
-                .claim("role", user.getRole().name())
-                .claim("email", user.getEmail())
-                .claim("provider", user.getProviderType().name())
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(secretKey)
-                .compact();
-    }
+	public String generateToken(User user) {
+		Date now = Date.from(Instant.now());
+		Date expiry = Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
+		return Jwts.builder()
+			.subject(user.getPublicId().toString())
+			.claim("role", user.getRole().name())
+			.claim("email", user.getEmail())
+			.claim("provider", user.getProviderType().name())
+			.issuedAt(now)
+			.expiration(expiry)
+			.signWith(secretKey)
+			.compact();
+	}
 
+	public boolean validateToken(String token) {
+		try {
+			Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
+			return true;
+		}
+		catch (JwtException | IllegalArgumentException e) {
 
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
+			return false;
+		}
 
-            return false;
-        }
+	}
 
-    }
+	public UUID extractUserId(String token) {
 
-    public UUID extractUserId(String token) {
+		Claims claims = extractClaims(token);
 
-        Claims claims = extractClaims(token);
+		return UUID.fromString(claims.getSubject());
+	}
 
-        return UUID.fromString(claims.getSubject());
-    }
+	public boolean isTokenValid(String token) {
 
-    public boolean isTokenValid(String token) {
+		try {
 
-        try {
+			extractClaims(token);
 
-            extractClaims(token);
+			return true;
 
-            return true;
+		}
+		catch (JwtException | IllegalArgumentException ex) {
 
-        } catch (JwtException | IllegalArgumentException ex) {
+			return false;
+		}
+	}
 
-            return false;
-        }
-    }
+	public Claims extractClaims(String token) {
 
-
-    public Claims extractClaims(String token) {
-
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
+		return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+	}
 
 }

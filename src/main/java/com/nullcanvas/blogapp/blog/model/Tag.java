@@ -21,6 +21,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Tag extends BaseEntity {
-    @Column(name = "tag_name", nullable = false, unique = true)
-    private String name;
+
+	@Column(name = "tag_name", nullable = false, unique = true)
+	private String name;
+
 }

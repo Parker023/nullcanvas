@@ -23,23 +23,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
-    @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException authException) throws IOException, ServletException {
+		response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        Map<String, Object> body = Map.of(
-                "timestamp", Instant.now(),
-                "status", 401,
-                "error", "Unauthorized",
-                "message", authException.getMessage(),
-                "path", request.getRequestURI()
-        );
-        objectMapper.writeValue(
-                response.getOutputStream(),
-                body
-        );
-    }
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		Map<String, Object> body = Map.of("timestamp", Instant.now(), "status", 401, "error", "Unauthorized", "message",
+				authException.getMessage(), "path", request.getRequestURI());
+		objectMapper.writeValue(response.getOutputStream(), body);
+	}
+
 }

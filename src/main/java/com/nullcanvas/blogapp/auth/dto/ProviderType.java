@@ -5,13 +5,15 @@ package com.nullcanvas.blogapp.auth.dto;
  * @since 26/05/26
  */
 public enum ProviderType {
-    GOOGLE, GITHUB,LOCAL;
 
-    public static ProviderType fromString(String type) {
-        return switch (type.toLowerCase()) {
-            case "google" -> GOOGLE;
-            case "github" -> GITHUB;
-            default -> throw new IllegalArgumentException(type + " does not support");
-        };
-    }
+	GOOGLE, GITHUB, LOCAL;
+
+	public static ProviderType fromString(String type) {
+		return switch (type.toLowerCase()) {
+			case "google" -> GOOGLE;
+			case "github" -> GITHUB;
+			default -> throw new IllegalArgumentException(type + " does not support");
+		};
+	}
+
 }

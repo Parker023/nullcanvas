@@ -29,71 +29,68 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ChunkRequestStrategy implements BlogContentHandleStrategy {
-    private final ChunkStoreRepository chunkStoreRepository;
-    private final BlogMetadataService blogMetadataService;
-    private final BlogRepository blogRepository;
-    private final FullRequestStrategy fullRequestStrategy;
 
-    @Override
-    public ContentHandleType getContentHandleType() {
-        return ContentHandleType.CHUNK;
-    }
+	private final ChunkStoreRepository chunkStoreRepository;
 
-    @Transactional
-    @Override
-    public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
+	private final BlogMetadataService blogMetadataService;
 
-        if (!(contentRequest instanceof ChunkContentRequest(long chunkSeq, String chunk, boolean isFinalChunk)))
-            throw new InvalidRequestTypeException();
+	private final BlogRepository blogRepository;
 
-        ChunkContentRequest request = (ChunkContentRequest) contentRequest;
+	private final FullRequestStrategy fullRequestStrategy;
 
-        ChunkStore chunkStore = prepareChunkStore(request, blogPublicId);
+	@Override
+	public ContentHandleType getContentHandleType() {
+		return ContentHandleType.CHUNK;
+	}
 
-        ChunkStore savedChunk = chunkStoreRepository.saveAndFlush(chunkStore);
+	@Transactional
+	@Override
+	public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
 
-        if (savedChunk.isFinalChunk()) {
-            List<ChunkStore> chunkStores = chunkStoreRepository.findAllByBlogPublicId(blogPublicId);
-            JsonNode assembledContent = assembleChunks(chunkStores);
+		if (!(contentRequest instanceof ChunkContentRequest(long chunkSeq, String chunk, boolean isFinalChunk)))
+			throw new InvalidRequestTypeException();
 
-            log.info("{} chunks for {} aggregated", chunkStores.size(), blogPublicId);
-            FullContentRequest fullContentRequest = FullContentRequest.builder()
-                    .content(assembledContent)
-                    .build();
-            fullRequestStrategy.handle(fullContentRequest, blogPublicId);
+		ChunkContentRequest request = (ChunkContentRequest) contentRequest;
 
-            cleanUpChunkStores(blogPublicId);
+		ChunkStore chunkStore = prepareChunkStore(request, blogPublicId);
 
-        }
-    }
+		ChunkStore savedChunk = chunkStoreRepository.saveAndFlush(chunkStore);
 
-    private void cleanUpChunkStores(UUID blogPublicId) {
-        chunkStoreRepository.deleteByBlogPublicId(blogPublicId);
-    }
+		if (savedChunk.isFinalChunk()) {
+			List<ChunkStore> chunkStores = chunkStoreRepository.findAllByBlogPublicId(blogPublicId);
+			JsonNode assembledContent = assembleChunks(chunkStores);
 
-    private ChunkStore prepareChunkStore(ChunkContentRequest contentRequest, UUID blogPublicId) {
-        return ChunkStore.builder()
-                .blogPublicId(blogPublicId)
-                .isFinalChunk(contentRequest.isFinalChunk())
-                .chunkSeq(contentRequest.chunkSeq())
-                .chunk(contentRequest.chunk())
-                .build();
-    }
+			log.info("{} chunks for {} aggregated", chunkStores.size(), blogPublicId);
+			FullContentRequest fullContentRequest = FullContentRequest.builder().content(assembledContent).build();
+			fullRequestStrategy.handle(fullContentRequest, blogPublicId);
 
-    private JsonNode assembleChunks(List<ChunkStore> chunks) {
+			cleanUpChunkStores(blogPublicId);
 
-        String content = chunks.stream()
-                .map(ChunkStore::getChunk)
-                .collect(Collectors.joining());
+		}
+	}
 
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode contentNode =
-                mapper.createObjectNode();
+	private void cleanUpChunkStores(UUID blogPublicId) {
+		chunkStoreRepository.deleteByBlogPublicId(blogPublicId);
+	}
 
-        contentNode.put(
-                "content",
-                content
-        );
-        return contentNode;
-    }
+	private ChunkStore prepareChunkStore(ChunkContentRequest contentRequest, UUID blogPublicId) {
+		return ChunkStore.builder()
+			.blogPublicId(blogPublicId)
+			.isFinalChunk(contentRequest.isFinalChunk())
+			.chunkSeq(contentRequest.chunkSeq())
+			.chunk(contentRequest.chunk())
+			.build();
+	}
+
+	private JsonNode assembleChunks(List<ChunkStore> chunks) {
+
+		String content = chunks.stream().map(ChunkStore::getChunk).collect(Collectors.joining());
+
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode contentNode = mapper.createObjectNode();
+
+		contentNode.put("content", content);
+		return contentNode;
+	}
+
 }

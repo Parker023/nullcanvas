@@ -5,4 +5,5 @@ package com.nullcanvas.blogapp.blog.exception;
  * @since 05/06/26
  */
 public class InvalidRequestTypeException extends RuntimeException {
+
 }

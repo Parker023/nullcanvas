@@ -8,5 +8,6 @@ import com.nullcanvas.blogapp.auth.dto.AuthType;
  */
 public interface AuthenticationRequest {
 
-    AuthType getAuthType();
+	AuthType getAuthType();
+
 }

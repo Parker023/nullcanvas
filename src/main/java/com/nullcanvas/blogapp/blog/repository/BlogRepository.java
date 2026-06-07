@@ -14,5 +14,6 @@ import java.util.UUID;
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
 
-    Optional<Blog> findByPublicId(UUID blogPublicId);
+	Optional<Blog> findByPublicId(UUID blogPublicId);
+
 }

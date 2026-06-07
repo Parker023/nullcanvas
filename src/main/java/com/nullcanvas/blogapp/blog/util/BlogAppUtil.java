@@ -11,8 +11,8 @@ import java.util.UUID;
 @Component
 public class BlogAppUtil {
 
-    public UUID generateRandomUUID() {
-        return UUID.randomUUID();
-    }
+	public UUID generateRandomUUID() {
+		return UUID.randomUUID();
+	}
 
 }

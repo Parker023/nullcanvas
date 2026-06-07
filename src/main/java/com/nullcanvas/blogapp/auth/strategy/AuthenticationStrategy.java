@@ -10,7 +10,8 @@ import com.nullcanvas.blogapp.auth.dto.request.AuthenticationRequest;
  */
 public interface AuthenticationStrategy {
 
-    AuthenticationResponse authenticate(AuthenticationRequest request);
+	AuthenticationResponse authenticate(AuthenticationRequest request);
 
-    AuthType getType();
+	AuthType getType();
+
 }

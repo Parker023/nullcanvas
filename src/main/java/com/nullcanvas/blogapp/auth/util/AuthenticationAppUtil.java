@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-
 /**
  * @author Anirudh
  * @since 28/05/26
@@ -13,14 +12,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthenticationAppUtil {
 
-    private final PasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder;
 
-    public String hashString(String value) {
-        return passwordEncoder.encode(value);
-    }
+	public String hashString(String value) {
+		return passwordEncoder.encode(value);
+	}
 
+	public boolean matches(String rawValue, String encodedValue) {
+		return passwordEncoder.matches(rawValue, encodedValue);
+	}
 
-    public boolean matches(String rawValue, String encodedValue) {
-        return passwordEncoder.matches(rawValue, encodedValue);
-    }
 }

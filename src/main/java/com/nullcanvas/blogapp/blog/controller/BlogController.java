@@ -27,45 +27,38 @@ import java.util.UUID;
 @RequestMapping("/blog/v1")
 public class BlogController {
 
-    private final BlogMetadataService blogMetadataService;
-    private final BlogContentHandlerService contentHandlerService;
+	private final BlogMetadataService blogMetadataService;
 
-    @PostMapping("/metadata")
-    public ResponseEntity<MetadataResponse> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
+	private final BlogContentHandlerService contentHandlerService;
 
-        MetadataResponse metadataResponse = blogMetadataService.saveMetadata(metadataRequest);
+	@PostMapping("/metadata")
+	public ResponseEntity<MetadataResponse> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
 
-        return ResponseEntity
-                .ok(metadataResponse);
-    }
+		MetadataResponse metadataResponse = blogMetadataService.saveMetadata(metadataRequest);
 
-    @PostMapping("/{blogPublicId}/chunk")
-    public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
-        contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
+		return ResponseEntity.ok(metadataResponse);
+	}
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
-    }
+	@PostMapping("/{blogPublicId}/chunk")
+	public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest,
+			@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+		contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
 
-    @PostMapping("/{blogPublicId}/content")
-    public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest, @PathVariable(name = "blogPublicId") UUID blogPublicId) {
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
-        contentHandlerService.handleContent(fullContentRequest, blogPublicId);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
-    }
+	@PostMapping("/{blogPublicId}/content")
+	public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest,
+			@PathVariable(name = "blogPublicId") UUID blogPublicId) {
 
-    @GetMapping("/{blogPublicId}")
-    public ResponseEntity<Void> getBlog(@PathVariable(name = "blogPublicId") UUID blogPublicId) {
+		contentHandlerService.handleContent(fullContentRequest, blogPublicId);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
+	@GetMapping("/{blogPublicId}")
+	public ResponseEntity<Void> getBlog(@PathVariable(name = "blogPublicId") UUID blogPublicId) {
 
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .build();
-    }
-
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
 }

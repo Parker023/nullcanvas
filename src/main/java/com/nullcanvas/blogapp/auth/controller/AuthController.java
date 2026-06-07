@@ -8,7 +8,6 @@ import com.nullcanvas.blogapp.auth.dto.response.CurrentUserResponse;
 import com.nullcanvas.blogapp.auth.security.principal.CustomUserPrincipal;
 import com.nullcanvas.blogapp.auth.service.AuthenticationService;
 import com.nullcanvas.blogapp.auth.service.UserRegistrationService;
-import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,105 +38,71 @@ import static com.nullcanvas.blogapp.auth.constants.AuthConstants.ACCESS_TOKEN;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationService authenticationService;
-    private final UserRegistrationService registrationService;
+	private final AuthenticationService authenticationService;
 
-    @GetMapping("/test")
-    public String test() {
-        return "null canvas App Up and Running";
-    }
+	private final UserRegistrationService registrationService;
 
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(
-            @RequestBody LoginRequest request,
-            HttpServletResponse response
-    ) {
+	@GetMapping("/test")
+	public String test() {
+		return "null canvas App Up and Running";
+	}
 
-        JwtAuthenticationRequest authRequest =
-                new JwtAuthenticationRequest(
-                        request.getEmail(),
-                        request.getPassword()
-                );
+	@PostMapping("/login")
+	public ResponseEntity<Void> login(@RequestBody LoginRequest request, HttpServletResponse response) {
 
-        AuthenticationResponse authResponse =
-                authenticationService.authenticate(authRequest);
+		JwtAuthenticationRequest authRequest = new JwtAuthenticationRequest(request.getEmail(), request.getPassword());
 
-        ResponseCookie cookie =
-                ResponseCookie.from(ACCESS_TOKEN, authResponse.getToken())
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .sameSite("Lax")
-                        .maxAge(Duration.ofDays(1))
-                        .build();
+		AuthenticationResponse authResponse = authenticationService.authenticate(authRequest);
 
+		ResponseCookie cookie = ResponseCookie.from(ACCESS_TOKEN, authResponse.getToken())
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.sameSite("Lax")
+			.maxAge(Duration.ofDays(1))
+			.build();
 
-        response.addHeader(
-                HttpHeaders.SET_COOKIE,
-                cookie.toString()
-        );
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return ResponseEntity.ok().build();
-    }
+		return ResponseEntity.ok().build();
+	}
 
-    @PostMapping("/register")
-    public ResponseEntity<Void> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
+	@PostMapping("/register")
+	public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
 
-        registrationService.register(request);
+		registrationService.register(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .build();
-    }
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(HttpServletResponse response) {
 
+		ResponseCookie cookie = ResponseCookie.from(ACCESS_TOKEN, null)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0)
+			.build();
 
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            HttpServletResponse response
-    ) {
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+		return ResponseEntity.ok().build();
+	}
 
+	@GetMapping("/me")
+	public ResponseEntity<CurrentUserResponse> me(Authentication authentication) {
 
-        ResponseCookie cookie =
-                ResponseCookie.from(ACCESS_TOKEN, null)
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(0)
-                        .build();
+		if (authentication == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
 
-        response.addHeader(
-                HttpHeaders.SET_COOKIE,
-                cookie.toString()
-        );
-        return ResponseEntity.ok().build();
-    }
+		CustomUserPrincipal user = (CustomUserPrincipal) authentication.getPrincipal();
 
-    @GetMapping("/me")
-    public ResponseEntity<CurrentUserResponse> me(
-            Authentication authentication
-    ) {
-
-        if (authentication == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .build();
-        }
-
-        CustomUserPrincipal user =
-                (CustomUserPrincipal) authentication.getPrincipal();
-
-        return ResponseEntity.ok(
-                CurrentUserResponse.builder()
-                        .name(Objects.requireNonNull(user).getUsername())
-                        .email(user.getEmail())
-                        .roles(user.getAuthorities()
-                                .stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .toList())
-                        .build()
-        );
-    }
+		return ResponseEntity.ok(CurrentUserResponse.builder()
+			.name(Objects.requireNonNull(user).getUsername())
+			.email(user.getEmail())
+			.roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+			.build());
+	}
 
 }

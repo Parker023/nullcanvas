@@ -30,37 +30,39 @@ import java.io.IOException;
 @Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
+	@Value("${app.frontend-url}")
+	private String frontendUrl;
 
-    private final AuthenticationService authenticationService;
+	private final AuthenticationService authenticationService;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws IOException, ServletException {
 
-        OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+		OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
 
-        OAuth2User user = token.getPrincipal();
-        log.debug("Oauth request has come");
+		OAuth2User user = token.getPrincipal();
+		log.debug("Oauth request has come");
 
-        String authorizedClientRegistrationId = token.getAuthorizedClientRegistrationId();
+		String authorizedClientRegistrationId = token.getAuthorizedClientRegistrationId();
 
-        log.info("authorizedClientRegistrationId: {}", authorizedClientRegistrationId);
+		log.info("authorizedClientRegistrationId: {}", authorizedClientRegistrationId);
 
-        AuthenticationRequest req = new OAuthAuthenticationRequest(user, ProviderType.fromString(authorizedClientRegistrationId));
+		AuthenticationRequest req = new OAuthAuthenticationRequest(user,
+				ProviderType.fromString(authorizedClientRegistrationId));
 
-        AuthenticationResponse authenticationResponse = authenticationService.authenticate(req);
+		AuthenticationResponse authenticationResponse = authenticationService.authenticate(req);
 
-        Cookie cookie = new Cookie("access_token", authenticationResponse.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60);
+		Cookie cookie = new Cookie("access_token", authenticationResponse.getToken());
+		cookie.setHttpOnly(true);
+		cookie.setSecure(false);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60);
 
-        response.addCookie(cookie);
+		response.addCookie(cookie);
 
-        response.sendRedirect(frontendUrl+"/oauth-success");
+		response.sendRedirect(frontendUrl + "/oauth-success");
 
+	}
 
-    }
 }

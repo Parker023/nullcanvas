@@ -6,15 +6,15 @@ package com.nullcanvas.blogapp.blog.dto;
  */
 public enum ContentHandleType {
 
-    FULL, CHUNK;
+	FULL, CHUNK;
 
-    public static ContentHandleType fromString(String value) {
-        return switch (value.toLowerCase()) {
-            case "full" -> FULL;
-            case "chunk" -> CHUNK;
-            default -> throw new IllegalArgumentException("Invalid chunk handle type: " + value);
-        };
+	public static ContentHandleType fromString(String value) {
+		return switch (value.toLowerCase()) {
+			case "full" -> FULL;
+			case "chunk" -> CHUNK;
+			default -> throw new IllegalArgumentException("Invalid chunk handle type: " + value);
+		};
 
-    }
+	}
 
 }

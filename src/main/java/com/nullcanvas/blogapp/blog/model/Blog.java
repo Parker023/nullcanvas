@@ -32,37 +32,37 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public class Blog extends BaseEntity {
 
-    @Column(name = "author_id", nullable = false)
-    private UUID authorPublicId;
+	@Column(name = "author_id", nullable = false)
+	private UUID authorPublicId;
 
-    @Column(name = "title", nullable = false)
-    private String title;
+	@Column(name = "title", nullable = false)
+	private String title;
 
-    @Column(name = "slug", nullable = false)
-    private String slug;
+	@Column(name = "slug", nullable = false)
+	private String slug;
 
-    @Column(name = "summary")
-    private String summary;
+	@Column(name = "summary")
+	private String summary;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "content", columnDefinition = "jsonb")
-    private String contentJson;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "content", columnDefinition = "jsonb")
+	private String contentJson;
 
-    @Column(name = "cover_image_url")
-    private String coverImageUrl;
+	@Column(name = "cover_image_url")
+	private String coverImageUrl;
 
-    @Column(name = "status",nullable = false)
-    @Enumerated(EnumType.STRING)
-    private BlogStatus status;
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private BlogStatus status;
 
-    @Column(name = "visibility",nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Visibility visibility;
+	@Column(name = "visibility", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private Visibility visibility;
 
-    @Column(name = "published_at")
-    private Instant publishedAt;
+	@Column(name = "published_at")
+	private Instant publishedAt;
 
-    @Column(name = "content_size")
-    private Long contentSize;
+	@Column(name = "content_size")
+	private Long contentSize;
 
 }

@@ -14,23 +14,22 @@ import java.util.Map;
 @Service
 public class GithubOAuthUserAdapter implements OAuthUserAdapter {
 
-    @Override
-    public OAuthUser adapt(OAuth2User oAuth2User) {
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+	@Override
+	public OAuthUser adapt(OAuth2User oAuth2User) {
+		Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        return OAuthUser.builder()
-                .providerUserId(String.valueOf(attributes.get("id")))
-                .email((String) attributes.get("email"))
-                .name((String) attributes.get("login"))
-                .profileImageUrl((String) attributes.get("avatar_url"))
-                .providerType(ProviderType.GITHUB)
-                .build();
-    }
+		return OAuthUser.builder()
+			.providerUserId(String.valueOf(attributes.get("id")))
+			.email((String) attributes.get("email"))
+			.name((String) attributes.get("login"))
+			.profileImageUrl((String) attributes.get("avatar_url"))
+			.providerType(ProviderType.GITHUB)
+			.build();
+	}
 
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.GITHUB;
-    }
-
+	@Override
+	public ProviderType getProviderType() {
+		return ProviderType.GITHUB;
+	}
 
 }

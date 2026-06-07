@@ -17,7 +17,8 @@ import java.util.UUID;
  * @since 01/06/26
  */
 @Entity
-@Table(name = "blog_tag", uniqueConstraints = {@UniqueConstraint(columnNames = {"blog_public_id", "tag_public_id"})})
+@Table(name = "blog_tag",
+		uniqueConstraints = { @UniqueConstraint(columnNames = { "blog_public_id", "tag_public_id" }) })
 @Getter
 @Setter
 @Builder
@@ -25,9 +26,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class BlogTag extends BaseEntity {
 
-    @Column(name = "blog_public_id", nullable = false)
-    private UUID blogPublicId;
-    @Column(name = "tag_public_id", nullable = false)
-    private UUID tagPublicId;
+	@Column(name = "blog_public_id", nullable = false)
+	private UUID blogPublicId;
+
+	@Column(name = "tag_public_id", nullable = false)
+	private UUID tagPublicId;
 
 }

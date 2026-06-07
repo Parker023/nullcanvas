@@ -11,32 +11,27 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class OtpRateLimitService {
 
-    @Value("${app.otp.rate-limit.max-req}")
-    private long maxRequests;
+	@Value("${app.otp.rate-limit.max-req}")
+	private long maxRequests;
 
-    @Value("${app.otp.rate-limit.window}")
-    private Duration window;
+	@Value("${app.otp.rate-limit.window}")
+	private Duration window;
 
-    private static final String PREFIX =
-            "auth:otp:rate-limit:";
+	private static final String PREFIX = "auth:otp:rate-limit:";
 
-    private final StringRedisTemplate redisTemplate;
+	private final StringRedisTemplate redisTemplate;
 
-    public boolean isAllowed(String email) {
+	public boolean isAllowed(String email) {
 
-        String key = PREFIX + email;
+		String key = PREFIX + email;
 
-        Long count =
-                redisTemplate.opsForValue()
-                        .increment(key);
+		Long count = redisTemplate.opsForValue().increment(key);
 
-        if (count == 1) {
-            redisTemplate.expire(
-                    key,
-                    window
-            );
-        }
+		if (count == 1) {
+			redisTemplate.expire(key, window);
+		}
 
-        return count <= maxRequests;
-    }
+		return count <= maxRequests;
+	}
+
 }

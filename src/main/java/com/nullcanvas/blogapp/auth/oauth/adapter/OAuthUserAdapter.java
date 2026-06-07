@@ -10,7 +10,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
  */
 public interface OAuthUserAdapter {
 
-    OAuthUser adapt(OAuth2User oAuth2User);
+	OAuthUser adapt(OAuth2User oAuth2User);
 
-    ProviderType getProviderType();
+	ProviderType getProviderType();
+
 }

@@ -14,23 +14,23 @@ import java.util.Map;
 @Service
 public class GoogleOAuthUserAdapter implements OAuthUserAdapter {
 
+	@Override
+	public OAuthUser adapt(OAuth2User oAuth2User) {
+		Map<String, Object> attributes = oAuth2User.getAttributes();
 
-    @Override
-    public OAuthUser adapt(OAuth2User oAuth2User) {
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+		return OAuthUser.builder()
+			.providerUserId((String) attributes.get("sub"))
+			.email((String) attributes.get("email"))
+			.name((String) attributes.get("name"))
+			.profileImageUrl((String) attributes.get("picture"))
+			.providerType(ProviderType.GOOGLE)
+			.build();
 
-        return OAuthUser.builder()
-                .providerUserId((String) attributes.get("sub"))
-                .email((String) attributes.get("email"))
-                .name((String) attributes.get("name"))
-                .profileImageUrl((String) attributes.get("picture"))
-                .providerType(ProviderType.GOOGLE)
-                .build();
+	}
 
-    }
+	@Override
+	public ProviderType getProviderType() {
+		return ProviderType.GOOGLE;
+	}
 
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.GOOGLE;
-    }
 }

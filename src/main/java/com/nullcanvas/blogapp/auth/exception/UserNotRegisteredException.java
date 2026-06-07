@@ -5,4 +5,5 @@ package com.nullcanvas.blogapp.auth.exception;
  * @since 31/05/26
  */
 public class UserNotRegisteredException extends RuntimeException {
+
 }

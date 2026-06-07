@@ -22,69 +22,61 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserRegistrationService {
-    private final UserRepository userRepository;
-    private final AuthenticationAppUtil appUtil;
-    private final OtpService otpService;
 
-    @Transactional
-    public void register(RegisterRequest request) {
-        log.debug("inside Registration service");
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UserAlreadyExistsException();
-        }
-        User user = translate(request);
+	private final UserRepository userRepository;
 
+	private final AuthenticationAppUtil appUtil;
 
-        userRepository.save(user);
-        log.info("user {} is registered with null canvas", request.email());
+	private final OtpService otpService;
 
-        otpService.sendVerificationOtp(request.email());
+	@Transactional
+	public void register(RegisterRequest request) {
+		log.debug("inside Registration service");
+		if (userRepository.existsByEmail(request.email())) {
+			throw new UserAlreadyExistsException();
+		}
+		User user = translate(request);
 
-    }
+		userRepository.save(user);
+		log.info("user {} is registered with null canvas", request.email());
 
-    public void verifyEmail(
-            VerifyEmailRequest request
-    ) {
+		otpService.sendVerificationOtp(request.email());
 
+	}
 
-        boolean valid =
-                otpService.validateOtp(
-                        request.email(),
-                        request.otp()
-                );
+	public void verifyEmail(VerifyEmailRequest request) {
 
-        if (!valid) {
-            throw new InvalidOtpException("OTP is not Valid/ TTL Expired");
-        }
+		boolean valid = otpService.validateOtp(request.email(), request.otp());
 
-        User user =
-                userRepository.findByEmail(
-                        request.email()
-                ).orElseThrow();
+		if (!valid) {
+			throw new InvalidOtpException("OTP is not Valid/ TTL Expired");
+		}
 
-        if (user.isEmailVerified()) {
-            log.info("{} email already verified", request.email());
-            return;
-        }
+		User user = userRepository.findByEmail(request.email()).orElseThrow();
 
+		if (user.isEmailVerified()) {
+			log.info("{} email already verified", request.email());
+			return;
+		}
 
-        user.setEmailVerified(true);
+		user.setEmailVerified(true);
 
-        userRepository.save(user);
+		userRepository.save(user);
 
-        otpService.deleteOtp(request.email());
-    }
+		otpService.deleteOtp(request.email());
+	}
 
-    private User translate(RegisterRequest request) {
-        return User.builder()
-                .password(appUtil.hashString(request.password()))
-                .role(Role.USER)
-                .emailVerified(false)
-                .name(request.name())
-                .email(request.email())
-                .providerType(ProviderType.LOCAL)
-                .profileImageUrl(null)
-                .providerUserId("0")
-                .build();
-    }
+	private User translate(RegisterRequest request) {
+		return User.builder()
+			.password(appUtil.hashString(request.password()))
+			.role(Role.USER)
+			.emailVerified(false)
+			.name(request.name())
+			.email(request.email())
+			.providerType(ProviderType.LOCAL)
+			.profileImageUrl(null)
+			.providerUserId("0")
+			.build();
+	}
+
 }

@@ -29,74 +29,69 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
 
-    private final OAuthUserAdapterFactory oAuthUserAdapterFactory;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
+	private final OAuthUserAdapterFactory oAuthUserAdapterFactory;
 
-    @Transactional
-    @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+	private final UserRepository userRepository;
 
-        log.debug("Inside OAuth strategy");
+	private final JwtService jwtService;
 
-        OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
+	@Transactional
+	@Override
+	public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
-        OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.provider());
-        log.debug("Adapter selected: {}", adapter.getProviderType());
+		log.debug("Inside OAuth strategy");
 
-        OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.oauth2User());
+		OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
 
-        Optional<User> optionalUser = userRepository.findByEmail(oAuthUser.getEmail());
+		OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.provider());
+		log.debug("Adapter selected: {}", adapter.getProviderType());
 
+		OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.oauth2User());
 
-        if (optionalUser.isEmpty()) {
-            User translatedUser = translate(oAuthUser);
-            User savedUser = userRepository.save(translatedUser);
-            optionalUser = Optional.of(savedUser);
-        }
+		Optional<User> optionalUser = userRepository.findByEmail(oAuthUser.getEmail());
 
-        User fetchedUser = optionalUser.get();
+		if (optionalUser.isEmpty()) {
+			User translatedUser = translate(oAuthUser);
+			User savedUser = userRepository.save(translatedUser);
+			optionalUser = Optional.of(savedUser);
+		}
 
-        String token = jwtService.generateToken(fetchedUser);
+		User fetchedUser = optionalUser.get();
 
-        return prepareResponse(token, fetchedUser);
-    }
+		String token = jwtService.generateToken(fetchedUser);
 
-    @Override
-    public AuthType getType() {
-        return AuthType.OAUTH2;
-    }
+		return prepareResponse(token, fetchedUser);
+	}
 
-    private User translate(OAuthUser oauthUser) {
-        return User
-                .builder()
-                .email(oauthUser.getEmail())
-                .name(oauthUser.getName())
-                .profileImageUrl(oauthUser.getProfileImageUrl())
-                .providerType(oauthUser.getProviderType())
-                .providerUserId(oauthUser.getProviderUserId())
-                .role(Role.USER)
-                .emailVerified(true)
-                .password(null)
-                .build();
-    }
+	@Override
+	public AuthType getType() {
+		return AuthType.OAUTH2;
+	}
 
-    private AuthenticationResponse prepareResponse(String token, User user) {
-        UserResponse userResponse = UserResponse
-                .builder()
-                .email(user.getEmail())
-                .publicId(user.getPublicId())
-                .profileImageUrl(user.getProfileImageUrl())
-                .roles(List.of(user.getRole()))
-                .name(user.getName())
-                .build();
+	private User translate(OAuthUser oauthUser) {
+		return User.builder()
+			.email(oauthUser.getEmail())
+			.name(oauthUser.getName())
+			.profileImageUrl(oauthUser.getProfileImageUrl())
+			.providerType(oauthUser.getProviderType())
+			.providerUserId(oauthUser.getProviderUserId())
+			.role(Role.USER)
+			.emailVerified(true)
+			.password(null)
+			.build();
+	}
 
-        return AuthenticationResponse.builder()
-                .userResponse(userResponse)
-                .token(token)
-                .build();
+	private AuthenticationResponse prepareResponse(String token, User user) {
+		UserResponse userResponse = UserResponse.builder()
+			.email(user.getEmail())
+			.publicId(user.getPublicId())
+			.profileImageUrl(user.getProfileImageUrl())
+			.roles(List.of(user.getRole()))
+			.name(user.getName())
+			.build();
 
-    }
+		return AuthenticationResponse.builder().userResponse(userResponse).token(token).build();
 
+	}
 
 }

@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class AuthenticationResponse {
-    private String token;
-    private UserResponse userResponse;
+
+	private String token;
+
+	private UserResponse userResponse;
+
 }

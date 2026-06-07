@@ -21,38 +21,38 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogMetadataService {
-    private final BlogAppUtil appUtil;
-    private final BlogRepository blogRepository;
-    private final AuthUtil authUtil;
-    private final SlugGeneratorService slugGeneratorService;
 
-    @Transactional
-    public MetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
+	private final BlogAppUtil appUtil;
 
-        Blog blogWithMetadata = prepareBlog(metadataRequest);
+	private final BlogRepository blogRepository;
 
-        Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
+	private final AuthUtil authUtil;
 
-        return MetadataResponse.builder()
-                .blogPublicId(savedBlog.getPublicId())
-                .status(savedBlog.getStatus())
-                .build();
+	private final SlugGeneratorService slugGeneratorService;
 
-    }
+	@Transactional
+	public MetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
 
-    private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
+		Blog blogWithMetadata = prepareBlog(metadataRequest);
 
-        return Blog.builder()
-                .title(metadataRequest.getTitle())
-                .summary(metadataRequest.getSummary())
-                .authorPublicId(authUtil.getAuthorIdFromSecurityContext())
-                .coverImageUrl(metadataRequest.getCoverImageUrl())
-                .visibility(Visibility.fromString(metadataRequest.getVisibility()))
-                .slug(slugGeneratorService.generate(metadataRequest.getTitle()))
-                .status(BlogStatus.IN_PROGRESS)
-                .build();
+		Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
 
-    }
+		return MetadataResponse.builder().blogPublicId(savedBlog.getPublicId()).status(savedBlog.getStatus()).build();
 
+	}
+
+	private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
+
+		return Blog.builder()
+			.title(metadataRequest.getTitle())
+			.summary(metadataRequest.getSummary())
+			.authorPublicId(authUtil.getAuthorIdFromSecurityContext())
+			.coverImageUrl(metadataRequest.getCoverImageUrl())
+			.visibility(Visibility.fromString(metadataRequest.getVisibility()))
+			.slug(slugGeneratorService.generate(metadataRequest.getTitle()))
+			.status(BlogStatus.IN_PROGRESS)
+			.build();
+
+	}
 
 }

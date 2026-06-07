@@ -8,6 +8,6 @@ import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
  */
 public interface BlogContentRequest {
 
-    ContentHandleType getContentHandleType();
+	ContentHandleType getContentHandleType();
 
 }

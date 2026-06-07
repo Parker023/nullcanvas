@@ -26,27 +26,27 @@ import java.util.UUID;
 @Setter
 public class BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID publicId;
+	@Column(nullable = false, unique = true, updatable = false)
+	private UUID publicId;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+	@CreatedDate
+	@Column(nullable = false, updatable = false)
+	private Instant createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private Instant updatedAt;
+	@LastModifiedDate
+	@Column(nullable = false)
+	private Instant updatedAt;
 
-    @PrePersist
-    public void prePersist() {
+	@PrePersist
+	public void prePersist() {
 
-        if (publicId == null) {
-            publicId = UUID.randomUUID();
-        }
-    }
+		if (publicId == null) {
+			publicId = UUID.randomUUID();
+		}
+	}
 
 }

@@ -15,20 +15,19 @@ import java.util.stream.Collectors;
  */
 @Component
 public class BlogContentHandlerStrategyFactory {
-    private final Map<ContentHandleType, BlogContentHandleStrategy> blogContentHandleStrategyMap;
 
-    public BlogContentHandlerStrategyFactory(List<BlogContentHandleStrategy> strategies) {
-        blogContentHandleStrategyMap = strategies.stream()
-                .collect(Collectors.toMap(
-                        BlogContentHandleStrategy::getContentHandleType,
-                        Function.identity()
-                ));
-    }
+	private final Map<ContentHandleType, BlogContentHandleStrategy> blogContentHandleStrategyMap;
 
-    public BlogContentHandleStrategy getContentHandlerStrategy(ContentHandleType type) {
-        if (!blogContentHandleStrategyMap.containsKey(type))
-            throw new IllegalArgumentException("Invalid content handler strategy type: " + type);
+	public BlogContentHandlerStrategyFactory(List<BlogContentHandleStrategy> strategies) {
+		blogContentHandleStrategyMap = strategies.stream()
+			.collect(Collectors.toMap(BlogContentHandleStrategy::getContentHandleType, Function.identity()));
+	}
 
-        return blogContentHandleStrategyMap.get(type);
-    }
+	public BlogContentHandleStrategy getContentHandlerStrategy(ContentHandleType type) {
+		if (!blogContentHandleStrategyMap.containsKey(type))
+			throw new IllegalArgumentException("Invalid content handler strategy type: " + type);
+
+		return blogContentHandleStrategyMap.get(type);
+	}
+
 }

@@ -16,13 +16,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OAuthUser {
 
-    private String providerUserId;
+	private String providerUserId;
 
-    private String email;
+	private String email;
 
-    private String name;
+	private String name;
 
-    private String profileImageUrl;
+	private String profileImageUrl;
 
-    private ProviderType providerType;
+	private ProviderType providerType;
+
 }

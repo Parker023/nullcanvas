@@ -14,28 +14,26 @@ import java.util.List;
  */
 @Configuration
 public class CorsConfig {
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
 
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:5173", "http://nullcanvas.blog", "https://nullcanvas.blog", "https://app.nullcanvas.blog")
-        );
+		CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        );
+		configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://nullcanvas.blog",
+				"https://nullcanvas.blog", "https://app.nullcanvas.blog"));
 
-        configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        configuration.setAllowCredentials(true);
+		configuration.setAllowedHeaders(List.of("*"));
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+		configuration.setAllowCredentials(true);
 
-        source.registerCorsConfiguration("/**", configuration);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        return source;
-    }
+		source.registerCorsConfiguration("/**", configuration);
+
+		return source;
+	}
+
 }

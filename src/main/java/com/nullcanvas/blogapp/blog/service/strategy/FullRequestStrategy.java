@@ -22,28 +22,27 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FullRequestStrategy implements BlogContentHandleStrategy {
-    private final BlogRepository blogRepository;
 
-    @Override
-    public ContentHandleType getContentHandleType() {
-        return ContentHandleType.FULL;
-    }
+	private final BlogRepository blogRepository;
 
-    @Transactional
-    @Override
-    public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
+	@Override
+	public ContentHandleType getContentHandleType() {
+		return ContentHandleType.FULL;
+	}
 
-        if (!(contentRequest instanceof FullContentRequest( JsonNode content)))
-            throw new InvalidRequestTypeException();
-        Blog blog = blogRepository.findByPublicId(blogPublicId)
-                .orElseThrow(BlogNotFoundException::new);
+	@Transactional
+	@Override
+	public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
 
+		if (!(contentRequest instanceof FullContentRequest(JsonNode content)))
+			throw new InvalidRequestTypeException();
+		Blog blog = blogRepository.findByPublicId(blogPublicId).orElseThrow(BlogNotFoundException::new);
 
-        blog.setContentJson(content.toString());
-        blog.setContentSize((long) StringUtils.length(content.toString()));
+		blog.setContentJson(content.toString());
+		blog.setContentSize((long) StringUtils.length(content.toString()));
 
-        blogRepository.save(blog);
+		blogRepository.save(blog);
 
+	}
 
-    }
 }

@@ -17,15 +17,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AuthenticationService {
 
-    private final AuthStrategyFactory strategyFactory;
+	private final AuthStrategyFactory strategyFactory;
 
-    public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
+	public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
 
-        AuthenticationStrategy strategy = strategyFactory.getStrategy(authenticationRequest.getAuthType());
-        log.debug("Strategy selected: {}", strategy.getType());
-        return strategy.authenticate(authenticationRequest);
+		AuthenticationStrategy strategy = strategyFactory.getStrategy(authenticationRequest.getAuthType());
+		log.debug("Strategy selected: {}", strategy.getType());
+		return strategy.authenticate(authenticationRequest);
 
-    }
-
+	}
 
 }

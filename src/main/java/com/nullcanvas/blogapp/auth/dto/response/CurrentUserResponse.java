@@ -17,7 +17,11 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class CurrentUserResponse {
-    private String name;
-    private String email;
-    private List<String> roles;
+
+	private String name;
+
+	private String email;
+
+	private List<String> roles;
+
 }

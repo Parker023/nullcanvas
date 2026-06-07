@@ -16,19 +16,17 @@ import java.util.stream.Collectors;
 @Component
 public class OAuthUserAdapterFactory {
 
-    private final Map<ProviderType, OAuthUserAdapter> adapterMap;
+	private final Map<ProviderType, OAuthUserAdapter> adapterMap;
 
-    public OAuthUserAdapterFactory(List<OAuthUserAdapter> adapters) {
-        adapterMap = adapters
-                .stream()
-                .collect(Collectors
-                        .toMap(OAuthUserAdapter::getProviderType, Function.identity()));
-    }
+	public OAuthUserAdapterFactory(List<OAuthUserAdapter> adapters) {
+		adapterMap = adapters.stream()
+			.collect(Collectors.toMap(OAuthUserAdapter::getProviderType, Function.identity()));
+	}
 
+	public OAuthUserAdapter getAdapter(ProviderType providerType) {
+		if (!adapterMap.containsKey(providerType))
+			throw new IllegalArgumentException("invalid provider type: " + providerType);
+		return adapterMap.get(providerType);
+	}
 
-    public OAuthUserAdapter getAdapter(ProviderType providerType) {
-        if (!adapterMap.containsKey(providerType))
-            throw new IllegalArgumentException("invalid provider type: " + providerType);
-        return adapterMap.get(providerType);
-    }
 }

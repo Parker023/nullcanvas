@@ -21,24 +21,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth/otp/v1")
 @RequiredArgsConstructor
 public class OtpController {
-    private final UserRegistrationService registrationService;
-    private final OtpService otpService;
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<Void> verify(
-            @RequestBody @Valid VerifyEmailRequest request
-    ) {
+	private final UserRegistrationService registrationService;
 
-        registrationService.verifyEmail(request);
+	private final OtpService otpService;
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .build();
-    }
+	@PostMapping("/verify-otp")
+	public ResponseEntity<Void> verify(@RequestBody @Valid VerifyEmailRequest request) {
 
-    @PostMapping("/resend-otp")
-    public ResponseEntity<Void> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
-        otpService.resendOtp(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .build();
-    }
+		registrationService.verifyEmail(request);
+
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	@PostMapping("/resend-otp")
+	public ResponseEntity<Void> resendOtp(@RequestBody @Valid ResendOtpRequest request) {
+		otpService.resendOtp(request);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
 }

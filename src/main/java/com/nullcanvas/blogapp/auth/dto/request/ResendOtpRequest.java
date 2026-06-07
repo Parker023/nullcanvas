@@ -6,5 +6,5 @@ import jakarta.validation.constraints.NotBlank;
  * @author Anirudh
  * @since 03/06/26
  */
-public record ResendOtpRequest( @NotBlank String email) {
+public record ResendOtpRequest(@NotBlank String email) {
 }

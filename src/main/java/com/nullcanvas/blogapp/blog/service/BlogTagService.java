@@ -16,12 +16,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogTagService {
-    private final BlogTagRepository blogTagRepository;
 
-    public void insertBlogTag(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
+	private final BlogTagRepository blogTagRepository;
 
-        //TODO tags
+	public void insertBlogTag(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
 
+		// TODO tags
 
-    }
+	}
+
 }

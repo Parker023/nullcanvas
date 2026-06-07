@@ -11,8 +11,8 @@ import java.util.UUID;
  */
 public interface BlogContentHandleStrategy {
 
-    ContentHandleType getContentHandleType();
+	ContentHandleType getContentHandleType();
 
-    void handle(BlogContentRequest contentRequest, UUID blogPublicId);
+	void handle(BlogContentRequest contentRequest, UUID blogPublicId);
 
 }

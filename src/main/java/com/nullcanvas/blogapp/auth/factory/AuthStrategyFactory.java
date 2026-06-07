@@ -16,19 +16,17 @@ import java.util.stream.Collectors;
 @Component
 public class AuthStrategyFactory {
 
-    private final Map<AuthType, AuthenticationStrategy> authenticationStrategyMap;
+	private final Map<AuthType, AuthenticationStrategy> authenticationStrategyMap;
 
+	public AuthStrategyFactory(List<AuthenticationStrategy> authenticationStrategies) {
+		authenticationStrategyMap = authenticationStrategies.stream()
+			.collect(Collectors.toMap(AuthenticationStrategy::getType, Function.identity()));
+	}
 
-    public AuthStrategyFactory(List<AuthenticationStrategy> authenticationStrategies) {
-        authenticationStrategyMap = authenticationStrategies.stream()
-                .collect(Collectors.toMap(AuthenticationStrategy::getType
-                        , Function.identity()));
-    }
+	public AuthenticationStrategy getStrategy(AuthType authType) {
+		if (!authenticationStrategyMap.containsKey(authType))
+			throw new IllegalArgumentException("Invalid Auth type: " + authType);
+		return authenticationStrategyMap.get(authType);
+	}
 
-
-    public AuthenticationStrategy getStrategy(AuthType authType) {
-        if (!authenticationStrategyMap.containsKey(authType))
-            throw new IllegalArgumentException("Invalid Auth type: " + authType);
-        return authenticationStrategyMap.get(authType);
-    }
 }

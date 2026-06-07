@@ -6,5 +6,7 @@ package com.nullcanvas.blogapp.auth.dto;
  */
 
 public enum AuthType {
-    JWT, OAUTH2;
+
+	JWT, OAUTH2
+
 }

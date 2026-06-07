@@ -23,40 +23,29 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final OAuth2SuccessHandler successHandler;
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final OAuth2SuccessHandler successHandler;
 
+	private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
-    @Bean
-    public SecurityFilterChain httpSecurity(HttpSecurity http) throws Exception {
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        return http
-                .authorizeHttpRequests(req -> req
-                        .requestMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
-                        .requestMatchers(
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
-                                "/actuator/health",
-                                "/error"
-                        )
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-                )
-                .cors(Customizer.withDefaults())
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(successHandler)
-                )
-                .csrf(CsrfConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
+	@Bean
+	public SecurityFilterChain httpSecurity(HttpSecurity http) throws Exception {
+
+		return http
+			.authorizeHttpRequests(req -> req.requestMatchers(HttpMethod.OPTIONS, "/**")
+				.permitAll()
+				.requestMatchers("/auth/**", "/oauth2/**", "/login/oauth2/**", "/actuator/health", "/error")
+				.permitAll()
+				.anyRequest()
+				.authenticated())
+			.cors(Customizer.withDefaults())
+			.oauth2Login(oauth2 -> oauth2.successHandler(successHandler))
+			.csrf(CsrfConfigurer::disable)
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+			.build();
+	}
 
 }

@@ -18,7 +18,7 @@ import java.util.UUID;
  * @since 01/06/26
  */
 @Entity
-@Table(name = "chunk_store", uniqueConstraints = @UniqueConstraint(columnNames = {"blog_public_id", "chunk_seq"}))
+@Table(name = "chunk_store", uniqueConstraints = @UniqueConstraint(columnNames = { "blog_public_id", "chunk_seq" }))
 @Builder
 @AllArgsConstructor
 @Setter
@@ -26,17 +26,17 @@ import java.util.UUID;
 @Getter
 public class ChunkStore extends BaseEntity {
 
-    @Column(name = "blog_public_id", nullable = false)
-    private UUID blogPublicId;
+	@Column(name = "blog_public_id", nullable = false)
+	private UUID blogPublicId;
 
-    @Column(name = "chunk_seq")
-    private long chunkSeq;
+	@Column(name = "chunk_seq")
+	private long chunkSeq;
 
-    @Column(name = "chunk")
-    @Lob
-    private String chunk;
+	@Column(name = "chunk")
+	@Lob
+	private String chunk;
 
-    @Column(name = "is_final_chunk")
-    private boolean isFinalChunk;
+	@Column(name = "is_final_chunk")
+	private boolean isFinalChunk;
 
 }

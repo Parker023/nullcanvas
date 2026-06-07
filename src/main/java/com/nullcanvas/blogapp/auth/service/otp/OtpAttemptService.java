@@ -11,38 +11,33 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class OtpAttemptService {
 
-    @Value("${app.otp.rate-limit.attempt.retries}")
-    private int maxAttempts;
+	@Value("${app.otp.rate-limit.attempt.retries}")
+	private int maxAttempts;
 
-    @Value("${app.otp.rate-limit.attempt.window}")
-    private Duration window;
+	@Value("${app.otp.rate-limit.attempt.window}")
+	private Duration window;
 
-    private static final String PREFIX =
-            "auth:otp:attempts:";
+	private static final String PREFIX = "auth:otp:attempts:";
 
-    private final StringRedisTemplate redisTemplate;
+	private final StringRedisTemplate redisTemplate;
 
-    public boolean recordFailure(String email) {
+	public boolean recordFailure(String email) {
 
-        String key = PREFIX + email;
+		String key = PREFIX + email;
 
-        Long count =
-                redisTemplate.opsForValue()
-                        .increment(key);
+		Long count = redisTemplate.opsForValue().increment(key);
 
-        if (count == 1) {
+		if (count == 1) {
 
-            redisTemplate.expire(
-                    key,
-                    window
-            );
-        }
+			redisTemplate.expire(key, window);
+		}
 
-        return count <= maxAttempts;
-    }
+		return count <= maxAttempts;
+	}
 
-    public void reset(String email) {
+	public void reset(String email) {
 
-        redisTemplate.delete(PREFIX + email);
-    }
+		redisTemplate.delete(PREFIX + email);
+	}
+
 }

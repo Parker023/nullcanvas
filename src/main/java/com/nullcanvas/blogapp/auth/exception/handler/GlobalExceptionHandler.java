@@ -20,82 +20,74 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CoolDownException.class)
-    public ResponseEntity<ExceptionResponse> coolDownException(CoolDownException exception) {
+	@ExceptionHandler(CoolDownException.class)
+	public ResponseEntity<ExceptionResponse> coolDownException(CoolDownException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("please try after 30 sec")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder().message("please try after 30 sec").build();
 
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ExceptionResponse> invalidCredentialsException(InvalidCredentialsException exception) {
+	@ExceptionHandler(InvalidCredentialsException.class)
+	public ResponseEntity<ExceptionResponse> invalidCredentialsException(InvalidCredentialsException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("Email or password does not match")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder().message("Email or password does not match").build();
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(InvalidOtpException.class)
-    public ResponseEntity<ExceptionResponse> invalidOtpException(InvalidOtpException exception) {
+	@ExceptionHandler(InvalidOtpException.class)
+	public ResponseEntity<ExceptionResponse> invalidOtpException(InvalidOtpException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("Otp does not match or expired")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder().message("Otp does not match or expired").build();
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(TooManyFailedOtpVerificationException.class)
-    public ResponseEntity<ExceptionResponse> tooManyFailedOtpVerificationException(TooManyFailedOtpVerificationException exception) {
+	@ExceptionHandler(TooManyFailedOtpVerificationException.class)
+	public ResponseEntity<ExceptionResponse> tooManyFailedOtpVerificationException(
+			TooManyFailedOtpVerificationException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("Too many failed attempts, please try after sometime")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder()
+			.message("Too many failed attempts, please try after sometime")
+			.build();
 
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(TooManyOtpRequestException.class)
-    public ResponseEntity<ExceptionResponse> tooManyOtpRequestException(TooManyOtpRequestException exception) {
+	@ExceptionHandler(TooManyOtpRequestException.class)
+	public ResponseEntity<ExceptionResponse> tooManyOtpRequestException(TooManyOtpRequestException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("Too many attempts, please try after sometime")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder()
+			.message("Too many attempts, please try after sometime")
+			.build();
 
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ExceptionResponse> userAlreadyExistsException(UserAlreadyExistsException exception) {
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<ExceptionResponse> userAlreadyExistsException(UserAlreadyExistsException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("User already exists with this username or email")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder()
+			.message("User already exists with this username or email")
+			.build();
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 
-    }
+	}
 
-    @ExceptionHandler(UserNotRegisteredException.class)
-    public ResponseEntity<ExceptionResponse> userNotRegisteredException(UserNotRegisteredException exception) {
+	@ExceptionHandler(UserNotRegisteredException.class)
+	public ResponseEntity<ExceptionResponse> userNotRegisteredException(UserNotRegisteredException exception) {
 
-        ExceptionResponse response = ExceptionResponse.builder()
-                .message("User Not found with this email")
-                .build();
+		ExceptionResponse response = ExceptionResponse.builder().message("User Not found with this email").build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 
-    }
-
+	}
 
 }

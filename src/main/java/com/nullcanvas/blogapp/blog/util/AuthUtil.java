@@ -14,15 +14,17 @@ import java.util.UUID;
  */
 @Component
 public class AuthUtil {
-    public UUID getAuthorIdFromSecurityContext() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null)
-            throw new BadCredentialsException("User not authenticated");
 
-        if (authentication.getPrincipal() instanceof CustomUserPrincipal principal) {
-            return principal.getUserPublicId();
-        }
+	public UUID getAuthorIdFromSecurityContext() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication == null)
+			throw new BadCredentialsException("User not authenticated");
 
-        throw new BadCredentialsException("User not authenticated");
-    }
+		if (authentication.getPrincipal() instanceof CustomUserPrincipal principal) {
+			return principal.getUserPublicId();
+		}
+
+		throw new BadCredentialsException("User not authenticated");
+	}
+
 }

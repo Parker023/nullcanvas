@@ -5,7 +5,6 @@ import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
 import com.nullcanvas.blogapp.auth.exception.TooManyOtpRequestException;
 import com.nullcanvas.blogapp.auth.service.EmailService;
-import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,119 +25,102 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class OtpService {
 
-    @Value("${app.otp.otp-ttl}")
-    private Duration ttl;
+	@Value("${app.otp.otp-ttl}")
+	private Duration ttl;
 
-    @Value("${spring.data.redis.host:NOT_SET}")
-    private String redisHost;
+	@Value("${spring.data.redis.host:NOT_SET}")
+	private String redisHost;
 
-    @PostConstruct
-    public void init() {
-        log.info("Redis host = {}", redisHost);
-    }
+	@PostConstruct
+	public void init() {
+		log.info("Redis host = {}", redisHost);
+	}
 
-    private static final String PREFIX = "auth:email-verification:";
+	private static final String PREFIX = "auth:email-verification:";
 
-    private final StringRedisTemplate redisTemplate;
-    private final OtpCooldownService otpCooldownService;
-    private final OtpRateLimitService otpRateLimitService;
-    private final OtpAttemptService otpAttemptService;
-    private final EmailService emailService;
+	private final StringRedisTemplate redisTemplate;
 
-    public void sendVerificationOtp(
-            String email
-    ) throws CoolDownException {
+	private final OtpCooldownService otpCooldownService;
 
+	private final OtpRateLimitService otpRateLimitService;
 
-        //TODO remove entries where email is not verified after 1 hr from createdDatetime
+	private final OtpAttemptService otpAttemptService;
 
-        validateOtpRequest(email);
+	private final EmailService emailService;
 
-        String otp = generateOtp();
+	public void sendVerificationOtp(String email) throws CoolDownException {
 
-        redisTemplate.opsForValue().set(
-                PREFIX + email,
-                otp,
-                ttl
-        );
+		// TODO remove entries where email is not verified after 1 hr from createdDatetime
 
-        CompletableFuture.runAsync(() -> {
-            emailService.sendVerificationOtp(
-                    email,
-                    otp
-            );
-        });
+		validateOtpRequest(email);
 
-    }
+		String otp = generateOtp();
 
-    public boolean validateOtp(
-            String email,
-            String otp
-    ) {
+		redisTemplate.opsForValue().set(PREFIX + email, otp, ttl);
 
-        String storedOtp =
-                redisTemplate.opsForValue()
-                        .get(PREFIX + email);
+		CompletableFuture.runAsync(() -> {
+			emailService.sendVerificationOtp(email, otp);
+		});
 
-        if (storedOtp == null) {
-            return false;
-        }
+	}
 
-        boolean valid = storedOtp.equals(otp);
+	public boolean validateOtp(String email, String otp) {
 
-        if (!valid) {
+		String storedOtp = redisTemplate.opsForValue().get(PREFIX + email);
 
-            boolean allowed =
-                    otpAttemptService.recordFailure(email);
+		if (storedOtp == null) {
+			return false;
+		}
 
-            if (!allowed) {
-                throw new TooManyFailedOtpVerificationException();
-            }
+		boolean valid = storedOtp.equals(otp);
 
-            return false;
-        }
+		if (!valid) {
 
-        otpAttemptService.reset(email);
+			boolean allowed = otpAttemptService.recordFailure(email);
 
-        return true;
-    }
+			if (!allowed) {
+				throw new TooManyFailedOtpVerificationException();
+			}
 
-    public void deleteOtp(String email) {
+			return false;
+		}
 
-        redisTemplate.delete(PREFIX + email);
-    }
+		otpAttemptService.reset(email);
 
+		return true;
+	}
 
-    public String generateOtp() {
+	public void deleteOtp(String email) {
 
-        return String.valueOf(
-                ThreadLocalRandom.current()
-                        .nextInt(100000, 1000000)
-        );
-    }
+		redisTemplate.delete(PREFIX + email);
+	}
 
-    private void validateOtpRequest(
-            String email
-    ) {
+	public String generateOtp() {
 
-        if (!otpCooldownService.canResend(email)) {
-            throw new CoolDownException();
-        }
+		return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+	}
 
-        if (!otpRateLimitService.isAllowed(email)) {
-            throw new TooManyOtpRequestException();
-        }
-    }
+	private void validateOtpRequest(String email) {
 
-    public void resendOtp(ResendOtpRequest request) {
+		if (!otpCooldownService.canResend(email)) {
+			throw new CoolDownException();
+		}
 
-        Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
+		if (!otpRateLimitService.isAllowed(email)) {
+			throw new TooManyOtpRequestException();
+		}
+	}
 
-        log.info("otp re-sending for {}", request.email());
-        if (otpPresent)
-            redisTemplate.delete(PREFIX + request.email());
+	public void resendOtp(ResendOtpRequest request) {
 
-        sendVerificationOtp(request.email());
+		Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
 
-    }
+		log.info("otp re-sending for {}", request.email());
+		if (otpPresent)
+			redisTemplate.delete(PREFIX + request.email());
+
+		sendVerificationOtp(request.email());
+
+	}
+
 }

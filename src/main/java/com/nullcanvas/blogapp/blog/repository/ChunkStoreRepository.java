@@ -17,10 +17,11 @@ import java.util.UUID;
 @Repository
 public interface ChunkStoreRepository extends JpaRepository<ChunkStore, Long> {
 
-    @Query(value = "select * from chunk_store where blog_public_id= :blogPublicId order by chunk_seq ", nativeQuery = true)
-    List<ChunkStore> findAllByBlogPublicId(@Param("blogPublicId") UUID blogPublicId);
+	@Query(value = "select * from chunk_store where blog_public_id= :blogPublicId order by chunk_seq ",
+			nativeQuery = true)
+	List<ChunkStore> findAllByBlogPublicId(@Param("blogPublicId") UUID blogPublicId);
 
+	@Modifying
+	int deleteByBlogPublicId(UUID blogPublicId);
 
-    @Modifying
-    int deleteByBlogPublicId(UUID blogPublicId);
 }

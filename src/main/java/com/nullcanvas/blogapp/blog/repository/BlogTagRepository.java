@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
  * @since 05/06/26
  */
 @Repository
-public interface BlogTagRepository extends JpaRepository<BlogTag,Long> {
+public interface BlogTagRepository extends JpaRepository<BlogTag, Long> {
+
 }

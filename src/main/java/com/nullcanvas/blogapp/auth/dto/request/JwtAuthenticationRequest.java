@@ -1,8 +1,6 @@
 package com.nullcanvas.blogapp.auth.dto.request;
 
 import com.nullcanvas.blogapp.auth.dto.AuthType;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author Anirudh
@@ -11,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 
 public record JwtAuthenticationRequest(String email, String password) implements AuthenticationRequest {
 
-    @Override
-    public AuthType getAuthType() {
-        return AuthType.JWT;
-    }
+	@Override
+	public AuthType getAuthType() {
+		return AuthType.JWT;
+	}
 }

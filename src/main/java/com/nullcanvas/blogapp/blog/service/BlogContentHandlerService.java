@@ -17,12 +17,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogContentHandlerService {
-    private final BlogContentHandlerStrategyFactory blogContentHandlerStrategyFactory;
 
+	private final BlogContentHandlerStrategyFactory blogContentHandlerStrategyFactory;
 
-    public void handleContent(BlogContentRequest request, UUID blogPublicId) {
-        BlogContentHandleStrategy contentHandlerStrategy = blogContentHandlerStrategyFactory.getContentHandlerStrategy(request.getContentHandleType());
-        contentHandlerStrategy.handle(request, blogPublicId);
-    }
+	public void handleContent(BlogContentRequest request, UUID blogPublicId) {
+		BlogContentHandleStrategy contentHandlerStrategy = blogContentHandlerStrategyFactory
+			.getContentHandlerStrategy(request.getContentHandleType());
+		contentHandlerStrategy.handle(request, blogPublicId);
+	}
 
 }

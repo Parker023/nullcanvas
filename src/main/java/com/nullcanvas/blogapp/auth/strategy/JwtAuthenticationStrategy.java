@@ -27,56 +27,51 @@ import java.util.Objects;
 @Slf4j
 public class JwtAuthenticationStrategy implements AuthenticationStrategy {
 
-    private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final AuthenticationAppUtil appUtil;
+	private final JwtService jwtService;
 
+	private final UserRepository userRepository;
 
-    @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+	private final AuthenticationAppUtil appUtil;
 
-        JwtAuthenticationRequest jwtAuthenticationRequest = (JwtAuthenticationRequest) request;
+	@Override
+	public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
-        User user = userRepository
-                .findByEmail(jwtAuthenticationRequest
-                        .email())
-                .orElseThrow(UserNotRegisteredException::new);
+		JwtAuthenticationRequest jwtAuthenticationRequest = (JwtAuthenticationRequest) request;
 
-        if (Objects.isNull(user.getPassword()))
-            throw new UserNotRegisteredException();
+		User user = userRepository.findByEmail(jwtAuthenticationRequest.email())
+			.orElseThrow(UserNotRegisteredException::new);
 
-        boolean passwordMatch = appUtil.matches(jwtAuthenticationRequest.password(), user.getPassword());
+		if (Objects.isNull(user.getPassword()))
+			throw new UserNotRegisteredException();
 
-        if (!passwordMatch) {
-            throw new InvalidCredentialsException();
-        }
+		boolean passwordMatch = appUtil.matches(jwtAuthenticationRequest.password(), user.getPassword());
 
-        log.info("{} user is authenticated", user.getEmail());
+		if (!passwordMatch) {
+			throw new InvalidCredentialsException();
+		}
 
-        String token = jwtService.generateToken(user);
+		log.info("{} user is authenticated", user.getEmail());
 
+		String token = jwtService.generateToken(user);
 
-        return prepareResponse(token, user);
-    }
+		return prepareResponse(token, user);
+	}
 
-    @Override
-    public AuthType getType() {
-        return AuthType.JWT;
-    }
+	@Override
+	public AuthType getType() {
+		return AuthType.JWT;
+	}
 
-    private AuthenticationResponse prepareResponse(String token, User user) {
-        UserResponse userResponse = UserResponse.builder()
-                .name(user.getName())
-                .roles(List.of(user.getRole()))
-                .profileImageUrl(user.getProfileImageUrl())
-                .publicId(user.getPublicId())
-                .email(user.getEmail())
-                .build();
+	private AuthenticationResponse prepareResponse(String token, User user) {
+		UserResponse userResponse = UserResponse.builder()
+			.name(user.getName())
+			.roles(List.of(user.getRole()))
+			.profileImageUrl(user.getProfileImageUrl())
+			.publicId(user.getPublicId())
+			.email(user.getEmail())
+			.build();
 
+		return AuthenticationResponse.builder().userResponse(userResponse).token(token).build();
+	}
 
-        return AuthenticationResponse.builder()
-                .userResponse(userResponse)
-                .token(token)
-                .build();
-    }
 }

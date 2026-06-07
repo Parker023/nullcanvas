@@ -27,7 +27,6 @@ import static com.nullcanvas.blogapp.auth.constants.AuthConstants.ACCESS_TOKEN;
 import static com.nullcanvas.blogapp.auth.constants.AuthConstants.EMAIL;
 import static com.nullcanvas.blogapp.auth.constants.AuthConstants.ROLE;
 
-
 /**
  * @author Anirudh
  * @since 28/05/26
@@ -37,82 +36,70 @@ import static com.nullcanvas.blogapp.auth.constants.AuthConstants.ROLE;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+	private final JwtService jwtService;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String accessTokenFromCookie = getAccessTokenFromCookie(request.getCookies());
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+		String accessTokenFromCookie = getAccessTokenFromCookie(request.getCookies());
 
+		log.info("access token: {}", accessTokenFromCookie);
 
-        log.info("access token: {}", accessTokenFromCookie);
+		if (StringUtils.isEmpty(accessTokenFromCookie)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
 
-        if (StringUtils.isEmpty(accessTokenFromCookie)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+		try {
 
-        try {
+			if (Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
+				Claims claims = jwtService.extractClaims(accessTokenFromCookie);
+				UUID userId = UUID.fromString(claims.getSubject());
+				String email = claims.get(EMAIL, String.class);
+				String role = claims.get(ROLE, String.class);
+				UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(userId,
+						email, role);
 
+				SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            if (Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
-                Claims claims = jwtService.extractClaims(accessTokenFromCookie);
-                UUID userId = UUID.fromString(claims.getSubject());
-                String email =
-                        claims.get(EMAIL, String.class);
-                String role = claims.get(ROLE, String.class);
-                UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(userId, email, role);
+			}
+		}
+		catch (Exception ex) {
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+			SecurityContextHolder.clearContext();
+		}
+		filterChain.doFilter(request, response);
 
-            }
-        } catch (Exception ex) {
+	}
 
-            SecurityContextHolder.clearContext();
-        }
-        filterChain.doFilter(request, response);
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
 
+		return HttpMethod.OPTIONS.matches(request.getMethod());
+	}
 
-    }
+	private UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(UUID userId, String email,
+			String role) {
+		CustomUserPrincipal principal = new CustomUserPrincipal(userId, email, null,
+				List.of(new SimpleGrantedAuthority(role)));
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+		return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+	}
 
-        return HttpMethod.OPTIONS.matches(request.getMethod());
-    }
+	private String getAccessTokenFromCookie(Cookie[] cookies) {
 
-    private UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(UUID userId, String email, String role) {
-        CustomUserPrincipal principal =
-                new CustomUserPrincipal(
-                        userId,
-                        email,
-                        null,
-                        List.of(
-                                new SimpleGrantedAuthority(role)
-                        )
-                );
+		if (cookies == null) {
+			return null;
+		}
 
-        return new UsernamePasswordAuthenticationToken(
-                principal,
-                null,
-                principal.getAuthorities()
-        );
-    }
+		for (Cookie cookie : cookies) {
 
-    private String getAccessTokenFromCookie(
-            Cookie[] cookies
-    ) {
+			if (ACCESS_TOKEN.equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
 
-        if (cookies == null) {
-            return null;
-        }
+		return null;
+	}
 
-        for (Cookie cookie : cookies) {
-
-            if (ACCESS_TOKEN.equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-
-        return null;
-    }
 }

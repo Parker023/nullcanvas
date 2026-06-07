@@ -6,14 +6,14 @@ package com.nullcanvas.blogapp.blog.dto;
  */
 public enum Visibility {
 
-    PUBLIC, PRIVATE;
+	PUBLIC, PRIVATE;
 
+	public static Visibility fromString(String value) {
+		return switch (value.toLowerCase()) {
+			case "public" -> PUBLIC;
+			case "private" -> PRIVATE;
+			default -> throw new IllegalArgumentException("Invalid visibility type: " + value);
+		};
+	}
 
-    public static Visibility fromString(String value) {
-        return switch (value.toLowerCase()) {
-            case "public" -> PUBLIC;
-            case "private" -> PRIVATE;
-            default -> throw new IllegalArgumentException("Invalid visibility type: " + value);
-        };
-    }
 }
