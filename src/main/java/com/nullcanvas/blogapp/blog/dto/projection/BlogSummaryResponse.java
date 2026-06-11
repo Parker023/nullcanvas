@@ -11,5 +11,5 @@ import java.util.UUID;
  * @since 07/06/26
  */
 public record BlogSummaryResponse(String title, String summary, String slug, String coverImageUrl, BlogStatus status,
-                                  Visibility visibility, UUID publicId, Instant createdAt) {
+		Visibility visibility, UUID publicId, Instant createdAt) {
 }

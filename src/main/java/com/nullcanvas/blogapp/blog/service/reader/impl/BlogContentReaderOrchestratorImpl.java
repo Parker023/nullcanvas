@@ -12,23 +12,21 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BlogContentReaderOrchestratorImpl
-        implements BlogContentReaderOrchestrator {
+public class BlogContentReaderOrchestratorImpl implements BlogContentReaderOrchestrator {
 
-    private final FullContentReader fullReader;
-    private final ChunkContentReader chunkReader;
+	private final FullContentReader fullReader;
 
-    @Override
-    public FullContentResponse getFullContent(UUID blogId) {
-        return fullReader.read(blogId);
-    }
+	private final ChunkContentReader chunkReader;
 
-    @Override
-    public ChunkContentResponse getChunk(
-            UUID blogId,
-            Integer sequence) {
+	@Override
+	public FullContentResponse getFullContent(UUID blogId) {
+		return fullReader.read(blogId);
+	}
 
-        return chunkReader.read(blogId, sequence);
-    }
+	@Override
+	public ChunkContentResponse getChunk(UUID blogId, Integer sequence) {
+
+		return chunkReader.read(blogId, sequence);
+	}
 
 }

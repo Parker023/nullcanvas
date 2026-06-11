@@ -12,8 +12,10 @@ import java.util.UUID;
  */
 @Service
 public class ChunkContentReaderImpl implements ChunkContentReader {
-    @Override
-    public ChunkContentResponse read(UUID blogId, Integer sequence) {
-        return null;
-    }
+
+	@Override
+	public ChunkContentResponse read(UUID blogId, Integer sequence) {
+		return null;
+	}
+
 }

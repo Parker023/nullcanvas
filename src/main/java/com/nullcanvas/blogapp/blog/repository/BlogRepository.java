@@ -27,6 +27,4 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
 
 	List<BlogSummaryResponse> findAllByAuthorPublicIdOrderByCreatedAtDesc(UUID authorPublicId);
 
-
-
 }

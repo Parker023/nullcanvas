@@ -6,7 +6,6 @@ import java.util.UUID;
 
 public interface ChunkContentReader {
 
-    ChunkContentResponse read(
-            UUID blogId,
-            Integer sequence);
+	ChunkContentResponse read(UUID blogId, Integer sequence);
+
 }

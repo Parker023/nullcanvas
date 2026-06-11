@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public interface FullContentReader {
 
-    FullContentResponse read(UUID blogId);
+	FullContentResponse read(UUID blogId);
+
 }
