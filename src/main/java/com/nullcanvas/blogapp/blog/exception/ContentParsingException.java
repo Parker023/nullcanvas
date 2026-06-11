@@ -5,7 +5,9 @@ package com.nullcanvas.blogapp.blog.exception;
  * @since 11/06/26
  */
 public class ContentParsingException extends RuntimeException {
-    public ContentParsingException(String message, Throwable cause) {
-        super(message, cause);
-    }
+
+	public ContentParsingException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

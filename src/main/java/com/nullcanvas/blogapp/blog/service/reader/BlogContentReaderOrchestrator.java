@@ -7,9 +7,8 @@ import java.util.UUID;
 
 public interface BlogContentReaderOrchestrator {
 
-    FullContentResponse getFullContent(UUID blogId);
+	FullContentResponse getFullContent(UUID blogId);
 
-    ChunkContentResponse getChunk(
-            UUID blogId,
-            Integer sequence);
+	ChunkContentResponse getChunk(UUID blogId, Integer sequence);
+
 }

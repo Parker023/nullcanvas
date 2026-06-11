@@ -28,8 +28,8 @@ import java.util.UUID;
  *
  * <p>
  * Blog creation is split into two phases: first the metadata (title, tags, visibility) is
- * saved to get a public id, then the body is uploaded either as incremental chunks or
- * as a single full payload. Content uploads are routed through
+ * saved to get a public id, then the body is uploaded either as incremental chunks or as
+ * a single full payload. Content uploads are routed through
  * {@link BlogContentHandlerService}, which selects the appropriate handling strategy
  * based on the request type.
  * </p>
@@ -42,100 +42,96 @@ import java.util.UUID;
 @RequestMapping("/blog/v1")
 public class BlogController {
 
-    /**
-     * Persists blog metadata and returns the generated public identifier/slug.
-     */
-    private final BlogMetadataService blogMetadataService;
+	/**
+	 * Persists blog metadata and returns the generated public identifier/slug.
+	 */
+	private final BlogMetadataService blogMetadataService;
 
-    /**
-     * Routes a content payload to the strategy that knows how to store it (chunked or
-     * full).
-     */
-    private final BlogContentHandlerService contentHandlerService;
+	/**
+	 * Routes a content payload to the strategy that knows how to store it (chunked or
+	 * full).
+	 */
+	private final BlogContentHandlerService contentHandlerService;
 
-    /**
-     * Orchestrates blog content reading operations, including retrieving entire blog
-     * content or specific chunks based on request parameters. Provides abstraction
-     * over content retrieval strategies for full and chunked blog content.
-     */
-    private final BlogContentReaderOrchestrator contentReaderOrchestrator;
+	/**
+	 * Orchestrates blog content reading operations, including retrieving entire blog
+	 * content or specific chunks based on request parameters. Provides abstraction over
+	 * content retrieval strategies for full and chunked blog content.
+	 */
+	private final BlogContentReaderOrchestrator contentReaderOrchestrator;
 
-    /**
-     * Creates a blog's metadata record, the first step before any content is uploaded.
-     *
-     * @param metadataRequest the title, tags and visibility describing the blog
-     * @return the saved metadata including the public id used by subsequent content calls
-     */
-    @PostMapping("/metadata")
-    public ResponseEntity<SaveMetadataResponse> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
+	/**
+	 * Creates a blog's metadata record, the first step before any content is uploaded.
+	 * @param metadataRequest the title, tags and visibility describing the blog
+	 * @return the saved metadata including the public id used by subsequent content calls
+	 */
+	@PostMapping("/metadata")
+	public ResponseEntity<SaveMetadataResponse> insertMetadata(@RequestBody BlogMetadataRequest metadataRequest) {
 
-        // Persist the metadata; the response carries the public id needed to upload
-        // content next.
-        SaveMetadataResponse metadataResponse = blogMetadataService.saveMetadata(metadataRequest);
+		// Persist the metadata; the response carries the public id needed to upload
+		// content next.
+		SaveMetadataResponse metadataResponse = blogMetadataService.saveMetadata(metadataRequest);
 
-        return ResponseEntity.ok(metadataResponse);
-    }
+		return ResponseEntity.ok(metadataResponse);
+	}
 
-    /**
-     * Appends a single content chunk to an existing blog.
-     *
-     * @param chunkContentRequest the chunk payload and its ordering information
-     * @param blogPublicId        the public id of the blog the chunk belongs to
-     * @return {@code 201 Created} once the chunk is stored
-     */
-    @PostMapping("/{blogPublicId}/chunk")
-    public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest,
-                                            @PathVariable UUID blogPublicId) {
-        // Delegate to the handler, which picks the chunk strategy based on the request
-        // type.
-        contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
+	/**
+	 * Appends a single content chunk to an existing blog.
+	 * @param chunkContentRequest the chunk payload and its ordering information
+	 * @param blogPublicId the public id of the blog the chunk belongs to
+	 * @return {@code 201 Created} once the chunk is stored
+	 */
+	@PostMapping("/{blogPublicId}/chunk")
+	public ResponseEntity<Void> insertChunk(@RequestBody ChunkContentRequest chunkContentRequest,
+			@PathVariable UUID blogPublicId) {
+		// Delegate to the handler, which picks the chunk strategy based on the request
+		// type.
+		contentHandlerService.handleContent(chunkContentRequest, blogPublicId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
-    /**
-     * Stores the entire body of a blog in a single request.
-     *
-     * @param fullContentRequest the complete content payload
-     * @param blogPublicId       the public id of the blog being filled
-     * @return {@code 201 Created} once the content is stored
-     */
-    @PostMapping("/{blogPublicId}/content")
-    public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest,
-                                                  @PathVariable UUID blogPublicId) {
+	/**
+	 * Stores the entire body of a blog in a single request.
+	 * @param fullContentRequest the complete content payload
+	 * @param blogPublicId the public id of the blog being filled
+	 * @return {@code 201 Created} once the content is stored
+	 */
+	@PostMapping("/{blogPublicId}/content")
+	public ResponseEntity<Void> insertFullContent(@RequestBody FullContentRequest fullContentRequest,
+			@PathVariable UUID blogPublicId) {
 
-        // Delegate to the handler, which picks the full-content strategy based on the
-        // request type.
-        contentHandlerService.handleContent(fullContentRequest, blogPublicId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+		// Delegate to the handler, which picks the full-content strategy based on the
+		// request type.
+		contentHandlerService.handleContent(fullContentRequest, blogPublicId);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
 
-    /**
-     * Retrieves the list of blogs authored by the authenticated user.
-     *
-     * @return a ResponseEntity containing a list of blog summary responses, where each response
-     * includes details such as title, summary, slug, and other metadata.
-     */
-    @GetMapping("/my-blogs")
-    public ResponseEntity<List<BlogSummaryResponse>> getMyBlogs() {
+	/**
+	 * Retrieves the list of blogs authored by the authenticated user.
+	 * @return a ResponseEntity containing a list of blog summary responses, where each
+	 * response includes details such as title, summary, slug, and other metadata.
+	 */
+	@GetMapping("/my-blogs")
+	public ResponseEntity<List<BlogSummaryResponse>> getMyBlogs() {
 
-        List<BlogSummaryResponse> responseList = blogMetadataService.getBlogMetadata();
+		List<BlogSummaryResponse> responseList = blogMetadataService.getBlogMetadata();
 
-        return ResponseEntity.ok(responseList);
-    }
+		return ResponseEntity.ok(responseList);
+	}
 
-
-    /**
-     * Retrieves the full content of a blog based on its public identifier and slug.
-     *
-     * @param blogPublicId the unique public identifier of the blog
-     * @param slug         the URL-friendly string identifying the blog
-     * @return a ResponseEntity containing the full blog content as a {@link BlogContentResponse}
-     */
-    @GetMapping(value = "/content/{blogPublicId}/{slug}")
-    public ResponseEntity<BlogContentResponse> getFullBlogContent(@PathVariable UUID blogPublicId, @PathVariable String slug) {
-        FullContentResponse fullContent = contentReaderOrchestrator.getFullContent(blogPublicId);
-        return ResponseEntity.ok(fullContent);
-    }
+	/**
+	 * Retrieves the full content of a blog based on its public identifier and slug.
+	 * @param blogPublicId the unique public identifier of the blog
+	 * @param slug the URL-friendly string identifying the blog
+	 * @return a ResponseEntity containing the full blog content as a
+	 * {@link BlogContentResponse}
+	 */
+	@GetMapping(value = "/content/{blogPublicId}/{slug}")
+	public ResponseEntity<BlogContentResponse> getFullBlogContent(@PathVariable UUID blogPublicId,
+			@PathVariable String slug) {
+		FullContentResponse fullContent = contentReaderOrchestrator.getFullContent(blogPublicId);
+		return ResponseEntity.ok(fullContent);
+	}
 
 }
