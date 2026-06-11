@@ -1,8 +1,8 @@
-package com.nullcanvas.blogapp.blog.service;
+package com.nullcanvas.blogapp.blog.service.writer;
 
 import com.nullcanvas.blogapp.blog.dto.request.BlogContentRequest;
-import com.nullcanvas.blogapp.blog.service.factory.BlogContentHandlerStrategyFactory;
-import com.nullcanvas.blogapp.blog.service.strategy.BlogContentHandleStrategy;
+import com.nullcanvas.blogapp.blog.service.writer.factory.BlogContentHandlerStrategyFactory;
+import com.nullcanvas.blogapp.blog.service.writer.strategy.BlogContentHandleStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

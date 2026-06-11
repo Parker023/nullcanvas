@@ -1,20 +1,17 @@
 package com.nullcanvas.blogapp.blog.dto.response;
 
 import com.nullcanvas.blogapp.blog.dto.BlogStatus;
+import com.nullcanvas.blogapp.blog.dto.Visibility;
 import lombok.Builder;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Response returned after saving blog metadata, giving the client the handle for content
- * uploads.
- *
- * @param blogPublicId the public id of the newly created blog, used in subsequent content
- * calls
- * @param status the blog's current lifecycle status
  * @author Anirudh
- * @since 05/06/26
+ * @since 11/06/26
  */
 @Builder
-public record MetadataResponse(UUID blogPublicId, BlogStatus status) {
+public record MetadataResponse(String title, String summary, String slug, String coverImageUrl, BlogStatus status,
+                               Visibility visibility, UUID publicId, Instant createdAt, long contentSize) {
 }

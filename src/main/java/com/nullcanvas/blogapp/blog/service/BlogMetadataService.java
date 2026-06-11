@@ -1,6 +1,7 @@
 package com.nullcanvas.blogapp.blog.service;
 
-import com.nullcanvas.blogapp.blog.dto.response.MetadataResponse;
+import com.nullcanvas.blogapp.blog.dto.projection.BlogSummaryResponse;
+import com.nullcanvas.blogapp.blog.dto.response.SaveMetadataResponse;
 import com.nullcanvas.blogapp.blog.repository.BlogRepository;
 import com.nullcanvas.blogapp.blog.dto.BlogStatus;
 import com.nullcanvas.blogapp.blog.dto.Visibility;
@@ -12,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Persists the metadata phase of blog creation, returning the handle used for content
@@ -31,62 +35,81 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class BlogMetadataService {
 
-	/** General blog helper utilities. */
-	private final BlogAppUtil appUtil;
+    /**
+     * General blog helper utilities.
+     */
+    private final BlogAppUtil appUtil;
 
-	/** Persistence for blogs. */
-	private final BlogRepository blogRepository;
+    /**
+     * Persistence for blogs.
+     */
+    private final BlogRepository blogRepository;
 
-	/** Resolves the current author's id from the security context. */
-	private final AuthUtil authUtil;
+    /**
+     * Resolves the current author's id from the security context.
+     */
+    private final AuthUtil authUtil;
 
-	/** Generates URL-friendly slugs from titles. */
-	private final SlugGeneratorService slugGeneratorService;
+    /**
+     * Generates URL-friendly slugs from titles.
+     */
+    private final SlugGeneratorService slugGeneratorService;
 
-	/**
-	 * Saves a new blog's metadata and returns its public id and status.
-	 *
-	 * <p>
-	 * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
-	 * the insert immediately so the generated public id is available to return.
-	 * </p>
-	 * @param metadataRequest the title, tags, visibility and other metadata
-	 * @return the saved blog's public id and lifecycle status
-	 */
-	@Transactional
-	public MetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
+    /**
+     * Saves a new blog's metadata and returns its public id and status.
+     *
+     * <p>
+     * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
+     * the insert immediately so the generated public id is available to return.
+     * </p>
+     *
+     * @param metadataRequest the title, tags, visibility and other metadata
+     * @return the saved blog's public id and lifecycle status
+     */
+    @Transactional
+    public SaveMetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
 
-		// Translate the request into a persistable blog with derived fields populated.
-		Blog blogWithMetadata = prepareBlog(metadataRequest);
+        // Translate the request into a persistable blog with derived fields populated.
+        Blog blogWithMetadata = prepareBlog(metadataRequest);
 
-		// Flush immediately so the DB-assigned public id is available for the response.
-		Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
+        // Flush immediately so the DB-assigned public id is available for the response.
+        Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
 
-		return MetadataResponse.builder().blogPublicId(savedBlog.getPublicId()).status(savedBlog.getStatus()).build();
+        return SaveMetadataResponse.builder().blogPublicId(savedBlog.getPublicId()).status(savedBlog.getStatus()).build();
 
-	}
+    }
 
-	/**
-	 * Builds a new {@link Blog} from the request, deriving slug, author and initial
-	 * status.
-	 * @param metadataRequest the incoming metadata
-	 * @return the blog entity ready to persist
-	 */
-	private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
+    /**
+     * Builds a new {@link Blog} from the request, deriving slug, author and initial
+     * status.
+     *
+     * @param metadataRequest the incoming metadata
+     * @return the blog entity ready to persist
+     */
+    private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
 
-		// Author is taken from the authenticated principal; slug is derived from the
-		// title; the blog
-		// starts IN_PROGRESS because its content has not been uploaded yet.
-		return Blog.builder()
-			.title(metadataRequest.getTitle())
-			.summary(metadataRequest.getSummary())
-			.authorPublicId(authUtil.getAuthorIdFromSecurityContext())
-			.coverImageUrl(metadataRequest.getCoverImageUrl())
-			.visibility(Visibility.fromString(metadataRequest.getVisibility()))
-			.slug(slugGeneratorService.generate(metadataRequest.getTitle()))
-			.status(BlogStatus.IN_PROGRESS)
-			.build();
+        // Author is taken from the authenticated principal; slug is derived from the
+        // title; the blog
+        // starts IN_PROGRESS because its content has not been uploaded yet.
+        return Blog.builder()
+                .title(metadataRequest.getTitle())
+                .summary(metadataRequest.getSummary())
+                .authorPublicId(authUtil.getAuthorIdFromSecurityContext())
+                .coverImageUrl(metadataRequest.getCoverImageUrl())
+                .visibility(Visibility.fromString(metadataRequest.getVisibility()))
+                .slug(slugGeneratorService.generate(metadataRequest.getTitle()))
+                .status(BlogStatus.IN_PROGRESS)
+                .build();
 
-	}
+    }
 
+    public List<BlogSummaryResponse> getBlogMetadata() {
+        UUID authorId = authUtil.getAuthorIdFromSecurityContext();
+
+        List<BlogSummaryResponse> metadataResponses = blogRepository.findAllByAuthorPublicIdOrderByCreatedAtDesc(authorId);
+
+        log.info("Found {} blogs for author {}", metadataResponses.size(), authorId);
+        return metadataResponses;
+
+    }
 }

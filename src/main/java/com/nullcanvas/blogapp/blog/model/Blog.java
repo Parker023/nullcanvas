@@ -64,7 +64,7 @@ public class Blog extends BaseEntity {
 	@Column(name = "cover_image_url")
 	private String coverImageUrl;
 
-	/** Lifecycle status, persisted as its enum name. */
+	/** Lifecycle status persisted as its enum name. */
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BlogStatus status;

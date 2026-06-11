@@ -1,4 +1,4 @@
-package com.nullcanvas.blogapp.blog.service.strategy;
+package com.nullcanvas.blogapp.blog.service.writer.strategy;
 
 import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
 import com.nullcanvas.blogapp.blog.dto.request.BlogContentRequest;

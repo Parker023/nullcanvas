@@ -1,7 +1,7 @@
-package com.nullcanvas.blogapp.blog.service.factory;
+package com.nullcanvas.blogapp.blog.service.writer.factory;
 
 import com.nullcanvas.blogapp.blog.dto.ContentHandleType;
-import com.nullcanvas.blogapp.blog.service.strategy.BlogContentHandleStrategy;
+import com.nullcanvas.blogapp.blog.service.writer.strategy.BlogContentHandleStrategy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
