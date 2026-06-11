@@ -17,6 +17,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
+ * Base class for blog-module JPA entities, providing identity and audit columns.
+ *
+ * <p>
+ * Each entity carries an internal numeric primary key plus an externally-safe
+ * {@code publicId}, and the {@link AuditingEntityListener} automatically maintains the
+ * created/updated timestamps.
+ * </p>
+ *
  * @author Anirudh
  * @since 26/05/26
  */
@@ -26,27 +34,37 @@ import java.util.UUID;
 @Setter
 public class BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	/** Auto-incremented internal primary key; never exposed to clients. */
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID publicId;
+	/** Stable, unique identifier exposed externally so the internal id stays private. */
+	@Column(nullable = false, unique = true, updatable = false)
+	private UUID publicId;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+	/** Timestamp set once when the row is first persisted. */
+	@CreatedDate
+	@Column(nullable = false, updatable = false)
+	private Instant createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private Instant updatedAt;
+	/** Timestamp refreshed on every update. */
+	@LastModifiedDate
+	@Column(nullable = false)
+	private Instant updatedAt;
 
-    @PrePersist
-    public void prePersist() {
+	/**
+	 * Assigns a random {@code publicId} before the entity is first inserted, if one isn't
+	 * set.
+	 */
+	@PrePersist
+	public void prePersist() {
 
-        if (publicId == null) {
-            publicId = UUID.randomUUID();
-        }
-    }
+		// Generate the public id lazily at insert time so callers never have to supply
+		// it.
+		if (publicId == null) {
+			publicId = UUID.randomUUID();
+		}
+	}
 
 }

@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
+ * Result of a successful authentication, returned by every
+ * {@code AuthenticationStrategy}.
+ *
  * @author Anirudh
  * @since 25/05/26
  */
@@ -15,6 +18,11 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class AuthenticationResponse {
-    private String token;
-    private UserResponse userResponse;
+
+	/** The signed access token issued to the authenticated user. */
+	private String token;
+
+	/** The authenticated user's profile details. */
+	private UserResponse userResponse;
+
 }

@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 /**
+ * Profile of the currently authenticated user, returned by the {@code /auth/v1/me}
+ * endpoint.
+ *
  * @author Anirudh
  * @since 03/06/26
  */
@@ -17,7 +20,14 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class CurrentUserResponse {
-    private String name;
-    private String email;
-    private List<String> roles;
+
+	/** The user's display name. */
+	private String name;
+
+	/** The user's email address. */
+	private String email;
+
+	/** The user's roles expressed as authority strings (e.g. {@code "USER"}). */
+	private List<String> roles;
+
 }

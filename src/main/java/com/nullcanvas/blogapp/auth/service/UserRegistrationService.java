@@ -15,6 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Handles local-account registration and email verification.
+ *
+ * <p>
+ * Registration creates a not-yet-verified user and triggers an OTP email; verification
+ * confirms the OTP and flips the account to verified. Password hashing is delegated to
+ * {@link AuthenticationAppUtil}.
+ * </p>
+ *
  * @author Anirudh
  * @since 28/05/26
  */
@@ -22,69 +30,94 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserRegistrationService {
-    private final UserRepository userRepository;
-    private final AuthenticationAppUtil appUtil;
-    private final OtpService otpService;
 
-    @Transactional
-    public void register(RegisterRequest request) {
-        log.debug("inside Registration service");
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UserAlreadyExistsException();
-        }
-        User user = translate(request);
+	/** Persistence for user accounts. */
+	private final UserRepository userRepository;
 
+	/** Provides password hashing. */
+	private final AuthenticationAppUtil appUtil;
 
-        userRepository.save(user);
-        log.info("user {} is registered with null canvas", request.email());
+	/** Generates, sends and validates verification OTPs. */
+	private final OtpService otpService;
 
-        otpService.sendVerificationOtp(request.email());
+	/**
+	 * Registers a new local user and dispatches a verification OTP.
+	 *
+	 * <p>
+	 * Runs in a transaction so the user is only persisted if the whole flow succeeds.
+	 * </p>
+	 * @param request the registration details
+	 * @throws UserAlreadyExistsException if an account already exists for the email
+	 */
+	@Transactional
+	public void register(RegisterRequest request) {
+		log.debug("inside Registration service");
+		// Reject duplicate sign-ups up front.
+		if (userRepository.existsByEmail(request.email())) {
+			throw new UserAlreadyExistsException();
+		}
+		// Map the request to a persistable, unverified user (password hashed inside
+		// translate).
+		User user = translate(request);
 
-    }
+		userRepository.save(user);
+		log.info("user {} is registered with null canvas", request.email());
 
-    public void verifyEmail(
-            VerifyEmailRequest request
-    ) {
+		// Kick off the email-verification flow by sending the first OTP.
+		otpService.sendVerificationOtp(request.email());
 
+	}
 
-        boolean valid =
-                otpService.validateOtp(
-                        request.email(),
-                        request.otp()
-                );
+	/**
+	 * Verifies a user's email by checking the submitted OTP and marking the account
+	 * verified.
+	 * @param request the email and OTP to validate
+	 * @throws InvalidOtpException if the OTP is wrong or has expired
+	 */
+	public void verifyEmail(VerifyEmailRequest request) {
 
-        if (!valid) {
-            throw new InvalidOtpException("OTP is not Valid/ TTL Expired");
-        }
+		// Confirm the OTP matches the one stored for this email and hasn't expired.
+		boolean valid = otpService.validateOtp(request.email(), request.otp());
 
-        User user =
-                userRepository.findByEmail(
-                        request.email()
-                ).orElseThrow();
+		if (!valid) {
+			throw new InvalidOtpException("OTP is not Valid/ TTL Expired");
+		}
 
-        if (user.isEmailVerified()) {
-            log.info("{} email already verified", request.email());
-            return;
-        }
+		User user = userRepository.findByEmail(request.email()).orElseThrow();
 
+		// Idempotency: if already verified, do nothing further.
+		if (user.isEmailVerified()) {
+			log.info("{} email already verified", request.email());
+			return;
+		}
 
-        user.setEmailVerified(true);
+		user.setEmailVerified(true);
 
-        userRepository.save(user);
+		userRepository.save(user);
 
-        otpService.deleteOtp(request.email());
-    }
+		// Clean up the now-consumed OTP from the store.
+		otpService.deleteOtp(request.email());
+	}
 
-    private User translate(RegisterRequest request) {
-        return User.builder()
-                .password(appUtil.hashString(request.password()))
-                .role(Role.USER)
-                .emailVerified(false)
-                .name(request.name())
-                .email(request.email())
-                .providerType(ProviderType.LOCAL)
-                .profileImageUrl(null)
-                .providerUserId("0")
-                .build();
-    }
+	/**
+	 * Maps a registration request into a new, unverified local {@link User} with a hashed
+	 * password.
+	 * @param request the registration details
+	 * @return the user entity ready to be persisted
+	 */
+	private User translate(RegisterRequest request) {
+		// New local accounts start unverified, with the USER role and a hashed password;
+		// providerUserId "0" is a placeholder since there is no external provider.
+		return User.builder()
+			.password(appUtil.hashString(request.password()))
+			.role(Role.USER)
+			.emailVerified(false)
+			.name(request.name())
+			.email(request.email())
+			.providerType(ProviderType.LOCAL)
+			.profileImageUrl(null)
+			.providerUserId("0")
+			.build();
+	}
+
 }

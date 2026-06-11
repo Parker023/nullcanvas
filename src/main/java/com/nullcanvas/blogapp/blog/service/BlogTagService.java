@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
+ * Associates tags with a blog (work in progress).
+ *
  * @author Anirudh
  * @since 05/06/26
  */
@@ -16,12 +18,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogTagService {
-    private final BlogTagRepository blogTagRepository;
 
-    public void insertBlogTag(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
+	/** Persistence for blog-to-tag association rows. */
+	private final BlogTagRepository blogTagRepository;
 
-        //TODO tags
+	/**
+	 * Persists the tag associations for a blog.
+	 * @param metadataRequest the request carrying the tag names
+	 * @param blogPublicId the blog the tags should be linked to
+	 */
+	public void insertBlogTag(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
 
+		// TODO tags
 
-    }
+	}
+
 }

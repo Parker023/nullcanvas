@@ -21,6 +21,14 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * Authentication strategy for OAuth2 logins, with just-in-time account provisioning.
+ *
+ * <p>
+ * Normalises the provider profile via the matching adapter, then finds the existing user
+ * by email or creates one on first sign-in (treated as already email-verified), and
+ * finally issues the application's own JWT.
+ * </p>
+ *
  * @author Anirudh
  * @since 25/05/26
  */
@@ -29,74 +37,104 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuthAuthenticationStrategy implements AuthenticationStrategy {
 
-    private final OAuthUserAdapterFactory oAuthUserAdapterFactory;
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
+	/** Resolves the provider-specific adapter that normalises the profile. */
+	private final OAuthUserAdapterFactory oAuthUserAdapterFactory;
 
-    @Transactional
-    @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+	/** Looks up and persists user accounts. */
+	private final UserRepository userRepository;
 
-        log.debug("Inside OAuth strategy");
+	/** Generates the signed JWT for the authenticated user. */
+	private final JwtService jwtService;
 
-        OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
+	/**
+	 * Authenticates an OAuth2 user, provisioning the account if it does not yet exist.
+	 *
+	 * <p>
+	 * Transactional so the lookup-or-create of the user is atomic.
+	 * </p>
+	 * @param request the authentication request (an {@link OAuthAuthenticationRequest})
+	 * @return the response containing the issued JWT and user details
+	 */
+	@Transactional
+	@Override
+	public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
-        OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.provider());
-        log.debug("Adapter selected: {}", adapter.getProviderType());
+		log.debug("Inside OAuth strategy");
 
-        OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.oauth2User());
+		// The factory guarantees this strategy only receives OAuth requests, so the cast
+		// is safe.
+		OAuthAuthenticationRequest oAuthAuthenticationRequest = (OAuthAuthenticationRequest) request;
 
-        Optional<User> optionalUser = userRepository.findByEmail(oAuthUser.getEmail());
+		// Pick the adapter for the authenticating provider and normalise its raw profile.
+		OAuthUserAdapter adapter = oAuthUserAdapterFactory.getAdapter(oAuthAuthenticationRequest.provider());
+		log.debug("Adapter selected: {}", adapter.getProviderType());
 
+		OAuthUser oAuthUser = adapter.adapt(oAuthAuthenticationRequest.oauth2User());
 
-        if (optionalUser.isEmpty()) {
-            User translatedUser = translate(oAuthUser);
-            User savedUser = userRepository.save(translatedUser);
-            optionalUser = Optional.of(savedUser);
-        }
+		Optional<User> optionalUser = userRepository.findByEmail(oAuthUser.getEmail());
 
-        User fetchedUser = optionalUser.get();
+		// First sign-in for this email: provision a new account on the fly.
+		if (optionalUser.isEmpty()) {
+			User translatedUser = translate(oAuthUser);
+			User savedUser = userRepository.save(translatedUser);
+			optionalUser = Optional.of(savedUser);
+		}
 
-        String token = jwtService.generateToken(fetchedUser);
+		User fetchedUser = optionalUser.get();
 
-        return prepareResponse(token, fetchedUser);
-    }
+		// Issue our own token regardless of whether the user was just created or already
+		// existed.
+		String token = jwtService.generateToken(fetchedUser);
 
-    @Override
-    public AuthType getType() {
-        return AuthType.OAUTH2;
-    }
+		return prepareResponse(token, fetchedUser);
+	}
 
-    private User translate(OAuthUser oauthUser) {
-        return User
-                .builder()
-                .email(oauthUser.getEmail())
-                .name(oauthUser.getName())
-                .profileImageUrl(oauthUser.getProfileImageUrl())
-                .providerType(oauthUser.getProviderType())
-                .providerUserId(oauthUser.getProviderUserId())
-                .role(Role.USER)
-                .emailVerified(true)
-                .password(null)
-                .build();
-    }
+	/**
+	 * @return {@link AuthType#OAUTH2}
+	 */
+	@Override
+	public AuthType getType() {
+		return AuthType.OAUTH2;
+	}
 
-    private AuthenticationResponse prepareResponse(String token, User user) {
-        UserResponse userResponse = UserResponse
-                .builder()
-                .email(user.getEmail())
-                .publicId(user.getPublicId())
-                .profileImageUrl(user.getProfileImageUrl())
-                .roles(List.of(user.getRole()))
-                .name(user.getName())
-                .build();
+	/**
+	 * Maps a normalised OAuth profile into a new {@link User}.
+	 * @param oauthUser the provider-agnostic profile
+	 * @return a user entity ready to be persisted
+	 */
+	private User translate(OAuthUser oauthUser) {
+		// OAuth users have no local password and are considered email-verified by the
+		// provider.
+		return User.builder()
+			.email(oauthUser.getEmail())
+			.name(oauthUser.getName())
+			.profileImageUrl(oauthUser.getProfileImageUrl())
+			.providerType(oauthUser.getProviderType())
+			.providerUserId(oauthUser.getProviderUserId())
+			.role(Role.USER)
+			.emailVerified(true)
+			.password(null)
+			.build();
+	}
 
-        return AuthenticationResponse.builder()
-                .userResponse(userResponse)
-                .token(token)
-                .build();
+	/**
+	 * Assembles the authentication response from the token and user.
+	 * @param token the issued JWT
+	 * @param user the authenticated user
+	 * @return the combined token-and-profile response
+	 */
+	private AuthenticationResponse prepareResponse(String token, User user) {
+		// Expose only the safe, public user fields alongside the token.
+		UserResponse userResponse = UserResponse.builder()
+			.email(user.getEmail())
+			.publicId(user.getPublicId())
+			.profileImageUrl(user.getProfileImageUrl())
+			.roles(List.of(user.getRole()))
+			.name(user.getName())
+			.build();
 
-    }
+		return AuthenticationResponse.builder().userResponse(userResponse).token(token).build();
 
+	}
 
 }

@@ -5,7 +5,6 @@ import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
 import com.nullcanvas.blogapp.auth.exception.TooManyOtpRequestException;
 import com.nullcanvas.blogapp.auth.service.EmailService;
-import com.nullcanvas.blogapp.auth.service.VerifyEmailRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
+ * Orchestrates OTP generation, delivery and verification for email confirmation.
+ *
+ * <p>
+ * OTPs are stored in Redis under a per-email key with a TTL, so they expire
+ * automatically. Before issuing a code this service enforces cooldown and rate-limit
+ * rules, and during verification it tracks failed attempts to defend against brute-force
+ * guessing.
+ * </p>
+ *
  * @author Anirudh
  * @since 28/05/26
  */
@@ -26,119 +34,155 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class OtpService {
 
-    @Value("${app.otp.otp-ttl}")
-    private Duration ttl;
+	/** How long a generated OTP remains valid before Redis expires it. */
+	@Value("${app.otp.otp-ttl}")
+	private Duration ttl;
 
-    @Value("${spring.data.redis.host:NOT_SET}")
-    private String redisHost;
+	/** Redis host, logged at startup to confirm connectivity configuration. */
+	@Value("${spring.data.redis.host:NOT_SET}")
+	private String redisHost;
 
-    @PostConstruct
-    public void init() {
-        log.info("Redis host = {}", redisHost);
-    }
+	/**
+	 * Logs the resolved Redis host once the bean is initialised, as a configuration
+	 * sanity check.
+	 */
+	@PostConstruct
+	public void init() {
+		log.info("Redis host = {}", redisHost);
+	}
 
-    private static final String PREFIX = "auth:email-verification:";
+	/** Namespace prefix for OTP keys so they don't collide with other Redis data. */
+	private static final String PREFIX = "auth:email-verification:";
 
-    private final StringRedisTemplate redisTemplate;
-    private final OtpCooldownService otpCooldownService;
-    private final OtpRateLimitService otpRateLimitService;
-    private final OtpAttemptService otpAttemptService;
-    private final EmailService emailService;
+	/** Redis access for storing and reading OTP values. */
+	private final StringRedisTemplate redisTemplate;
 
-    public void sendVerificationOtp(
-            String email
-    ) throws CoolDownException {
+	/** Enforces a minimum delay between successive OTP requests. */
+	private final OtpCooldownService otpCooldownService;
 
+	/** Caps how many OTPs may be requested within a window. */
+	private final OtpRateLimitService otpRateLimitService;
 
-        //TODO remove entries where email is not verified after 1 hr from createdDatetime
+	/** Tracks failed verification attempts to block brute-forcing. */
+	private final OtpAttemptService otpAttemptService;
 
-        validateOtpRequest(email);
+	/** Sends the OTP email to the user. */
+	private final EmailService emailService;
 
-        String otp = generateOtp();
+	/**
+	 * Generates a fresh OTP, stores it with a TTL, and emails it asynchronously.
+	 * @param email the recipient's email address
+	 * @throws CoolDownException if the email is still within its resend cooldown
+	 */
+	public void sendVerificationOtp(String email) throws CoolDownException {
 
-        redisTemplate.opsForValue().set(
-                PREFIX + email,
-                otp,
-                ttl
-        );
+		// TODO remove entries where email is not verified after 1 hr from createdDatetime
 
-        CompletableFuture.runAsync(() -> {
-            emailService.sendVerificationOtp(
-                    email,
-                    otp
-            );
-        });
+		// Enforce cooldown and rate-limit before doing any work.
+		validateOtpRequest(email);
 
-    }
+		String otp = generateOtp();
 
-    public boolean validateOtp(
-            String email,
-            String otp
-    ) {
+		// Persist the OTP keyed by email with the configured TTL so it self-expires.
+		redisTemplate.opsForValue().set(PREFIX + email, otp, ttl);
 
-        String storedOtp =
-                redisTemplate.opsForValue()
-                        .get(PREFIX + email);
+		// Send the email off the request thread so the caller isn't blocked on SMTP.
+		CompletableFuture.runAsync(() -> {
+			emailService.sendVerificationOtp(email, otp);
+		});
 
-        if (storedOtp == null) {
-            return false;
-        }
+	}
 
-        boolean valid = storedOtp.equals(otp);
+	/**
+	 * Validates a submitted OTP against the stored value, tracking failures.
+	 * @param email the email the OTP was issued for
+	 * @param otp the OTP the user submitted
+	 * @return {@code true} if it matches; {@code false} if it is wrong or expired
+	 * @throws TooManyFailedOtpVerificationException if the failure limit is exceeded
+	 */
+	public boolean validateOtp(String email, String otp) {
 
-        if (!valid) {
+		String storedOtp = redisTemplate.opsForValue().get(PREFIX + email);
 
-            boolean allowed =
-                    otpAttemptService.recordFailure(email);
+		// A missing key means the OTP never existed or has already expired.
+		if (storedOtp == null) {
+			return false;
+		}
 
-            if (!allowed) {
-                throw new TooManyFailedOtpVerificationException();
-            }
+		boolean valid = storedOtp.equals(otp);
 
-            return false;
-        }
+		if (!valid) {
 
-        otpAttemptService.reset(email);
+			// Record the wrong guess; recordFailure returns false once the cap is hit.
+			boolean allowed = otpAttemptService.recordFailure(email);
 
-        return true;
-    }
+			if (!allowed) {
+				throw new TooManyFailedOtpVerificationException();
+			}
 
-    public void deleteOtp(String email) {
+			return false;
+		}
 
-        redisTemplate.delete(PREFIX + email);
-    }
+		// Successful match: clear the failed-attempt counter for this email.
+		otpAttemptService.reset(email);
 
+		return true;
+	}
 
-    public String generateOtp() {
+	/**
+	 * Removes a stored OTP, typically after it has been successfully consumed.
+	 * @param email the email whose OTP should be deleted
+	 */
+	public void deleteOtp(String email) {
 
-        return String.valueOf(
-                ThreadLocalRandom.current()
-                        .nextInt(100000, 1000000)
-        );
-    }
+		redisTemplate.delete(PREFIX + email);
+	}
 
-    private void validateOtpRequest(
-            String email
-    ) {
+	/**
+	 * Generates a random six-digit OTP.
+	 * @return a numeric OTP string in the range 100000–999999
+	 */
+	public String generateOtp() {
 
-        if (!otpCooldownService.canResend(email)) {
-            throw new CoolDownException();
-        }
+		// Bounds 100000..999999 guarantee exactly six digits (no leading zero).
+		return String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+	}
 
-        if (!otpRateLimitService.isAllowed(email)) {
-            throw new TooManyOtpRequestException();
-        }
-    }
+	/**
+	 * Applies the cooldown and rate-limit guards before an OTP may be issued.
+	 * @param email the email being checked
+	 * @throws CoolDownException if the resend cooldown has not elapsed
+	 * @throws TooManyOtpRequestException if the request rate limit is exceeded
+	 */
+	private void validateOtpRequest(String email) {
 
-    public void resendOtp(ResendOtpRequest request) {
+		// Block requests that come faster than the allowed cooldown.
+		if (!otpCooldownService.canResend(email)) {
+			throw new CoolDownException();
+		}
 
-        Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
+		// Block requests once the per-window quota is exhausted.
+		if (!otpRateLimitService.isAllowed(email)) {
+			throw new TooManyOtpRequestException();
+		}
+	}
 
-        log.info("otp re-sending for {}", request.email());
-        if (otpPresent)
-            redisTemplate.delete(PREFIX + request.email());
+	/**
+	 * Re-issues an OTP, discarding any existing one first so only the latest code is
+	 * valid.
+	 * @param request the email a new OTP should be sent to
+	 */
+	public void resendOtp(ResendOtpRequest request) {
 
-        sendVerificationOtp(request.email());
+		Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
 
-    }
+		log.info("otp re-sending for {}", request.email());
+		// Invalidate the previous OTP so a resend cannot leave two valid codes.
+		if (otpPresent)
+			redisTemplate.delete(PREFIX + request.email());
+
+		sendVerificationOtp(request.email());
+
+	}
+
 }

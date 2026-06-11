@@ -21,6 +21,15 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
+ * Bridges Spring Security's OAuth2 login success into the application's own token
+ * issuance.
+ *
+ * <p>
+ * After a provider authenticates the user, this handler converts the provider session
+ * into an application access token, sets it as a cookie, and redirects the browser to the
+ * frontend's post-login page.
+ * </p>
+ *
  * @author Anirudh
  * @since 26/05/26
  */
@@ -30,37 +39,60 @@ import java.io.IOException;
 @Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    @Value("${app.frontend-url}")
-    private String frontendUrl;
+	/** Frontend base URL the browser is redirected to after login completes. */
+	@Value("${app.frontend-url}")
+	private String frontendUrl;
 
-    private final AuthenticationService authenticationService;
+	/**
+	 * Issues the application's own access token from the provider's authenticated user.
+	 */
+	private final AuthenticationService authenticationService;
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+	/**
+	 * Invoked by Spring Security once a provider has successfully authenticated the user.
+	 * @param request the inbound request
+	 * @param response the response used to set the cookie and issue the redirect
+	 * @param authentication the provider's authentication token holding the user profile
+	 * @throws IOException if writing the redirect fails
+	 */
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws IOException, ServletException {
 
-        OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+		// Spring hands us an OAuth2-specific token; narrow to it to read provider
+		// details.
+		OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
 
-        OAuth2User user = token.getPrincipal();
-        log.debug("Oauth request has come");
+		OAuth2User user = token.getPrincipal();
+		log.debug("Oauth request has come");
 
-        String authorizedClientRegistrationId = token.getAuthorizedClientRegistrationId();
+		// The registration id ("google"/"github") tells us which provider just
+		// authenticated.
+		String authorizedClientRegistrationId = token.getAuthorizedClientRegistrationId();
 
-        log.info("authorizedClientRegistrationId: {}", authorizedClientRegistrationId);
+		log.info("authorizedClientRegistrationId: {}", authorizedClientRegistrationId);
 
-        AuthenticationRequest req = new OAuthAuthenticationRequest(user, ProviderType.fromString(authorizedClientRegistrationId));
+		// Wrap the provider user into our request type so the OAuth strategy can
+		// find/create the account.
+		AuthenticationRequest req = new OAuthAuthenticationRequest(user,
+				ProviderType.fromString(authorizedClientRegistrationId));
 
-        AuthenticationResponse authenticationResponse = authenticationService.authenticate(req);
+		// Run our authentication pipeline to mint an application JWT for this user.
+		AuthenticationResponse authenticationResponse = authenticationService.authenticate(req);
 
-        Cookie cookie = new Cookie("access_token", authenticationResponse.getToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60);
+		// Deliver the token as an HttpOnly cookie valid for one hour.
+		Cookie cookie = new Cookie("access_token", authenticationResponse.getToken());
+		cookie.setHttpOnly(true);
+		cookie.setSecure(false);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60);
 
-        response.addCookie(cookie);
+		response.addCookie(cookie);
 
-        response.sendRedirect(frontendUrl+"/oauth-success");
+		// Send the browser back to the frontend, which reads the cookie to complete
+		// sign-in.
+		response.sendRedirect(frontendUrl + "/oauth-success");
 
+	}
 
-    }
 }

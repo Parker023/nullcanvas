@@ -8,29 +8,43 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
+ * {@link OAuthUserAdapter} for GitHub, mapping GitHub's attribute keys to
+ * {@link OAuthUser}.
+ *
  * @author Anirudh
  * @since 26/05/26
  */
 @Service
 public class GithubOAuthUserAdapter implements OAuthUserAdapter {
 
-    @Override
-    public OAuthUser adapt(OAuth2User oAuth2User) {
-        Map<String, Object> attributes = oAuth2User.getAttributes();
+	/**
+	 * Maps GitHub's profile attributes (id, login, avatar_url, ...) into a normalised
+	 * user.
+	 * @param oAuth2User the GitHub user profile
+	 * @return the normalised user tagged with {@link ProviderType#GITHUB}
+	 */
+	@Override
+	public OAuthUser adapt(OAuth2User oAuth2User) {
+		// Raw key/value attributes as returned by GitHub's user endpoint.
+		Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        return OAuthUser.builder()
-                .providerUserId(String.valueOf(attributes.get("id")))
-                .email((String) attributes.get("email"))
-                .name((String) attributes.get("login"))
-                .profileImageUrl((String) attributes.get("avatar_url"))
-                .providerType(ProviderType.GITHUB)
-                .build();
-    }
+		// Translate GitHub-specific keys ("id", "login", "avatar_url") into our common
+		// fields.
+		return OAuthUser.builder()
+			.providerUserId(String.valueOf(attributes.get("id")))
+			.email((String) attributes.get("email"))
+			.name((String) attributes.get("login"))
+			.profileImageUrl((String) attributes.get("avatar_url"))
+			.providerType(ProviderType.GITHUB)
+			.build();
+	}
 
-    @Override
-    public ProviderType getProviderType() {
-        return ProviderType.GITHUB;
-    }
-
+	/**
+	 * @return {@link ProviderType#GITHUB}
+	 */
+	@Override
+	public ProviderType getProviderType() {
+		return ProviderType.GITHUB;
+	}
 
 }
