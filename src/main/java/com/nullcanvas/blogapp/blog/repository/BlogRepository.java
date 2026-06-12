@@ -19,14 +19,13 @@ import java.util.UUID;
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
 
-    /**
-     * Finds a blog by its public id.
-     *
-     * @param blogPublicId the public id to look up
-     * @return the matching blog, or empty if none exists
-     */
-    Optional<Blog> findByPublicId(UUID blogPublicId);
+	/**
+	 * Finds a blog by its public id.
+	 * @param blogPublicId the public id to look up
+	 * @return the matching blog, or empty if none exists
+	 */
+	Optional<Blog> findByPublicId(UUID blogPublicId);
 
-    Page<BlogSummaryResponse> findAllByAuthorPublicIdOrderByCreatedAtDesc(UUID authorPublicId, Pageable pageRequest);
+	Page<BlogSummaryResponse> findAllByAuthorPublicIdOrderByCreatedAtDesc(UUID authorPublicId, Pageable pageRequest);
 
 }
