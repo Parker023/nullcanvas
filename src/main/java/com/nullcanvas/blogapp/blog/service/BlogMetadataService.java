@@ -36,85 +36,83 @@ import java.util.UUID;
 @Slf4j
 public class BlogMetadataService {
 
-    /**
-     * General blog helper utilities.
-     */
-    private final BlogAppUtil appUtil;
+	/**
+	 * General blog helper utilities.
+	 */
+	private final BlogAppUtil appUtil;
 
-    /**
-     * Persistence for blogs.
-     */
-    private final BlogRepository blogRepository;
+	/**
+	 * Persistence for blogs.
+	 */
+	private final BlogRepository blogRepository;
 
-    /**
-     * Resolves the current author's id from the security context.
-     */
-    private final AuthUtil authUtil;
+	/**
+	 * Resolves the current author's id from the security context.
+	 */
+	private final AuthUtil authUtil;
 
-    /**
-     * Generates URL-friendly slugs from titles.
-     */
-    private final SlugGeneratorService slugGeneratorService;
+	/**
+	 * Generates URL-friendly slugs from titles.
+	 */
+	private final SlugGeneratorService slugGeneratorService;
 
-    /**
-     * Saves a new blog's metadata and returns its public id and status.
-     *
-     * <p>
-     * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
-     * the insert immediately so the generated public id is available to return.
-     * </p>
-     *
-     * @param metadataRequest the title, tags, visibility and other metadata
-     * @return the saved blog's public id and lifecycle status
-     */
-    @Transactional
-    public SaveMetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
+	/**
+	 * Saves a new blog's metadata and returns its public id and status.
+	 *
+	 * <p>
+	 * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
+	 * the insert immediately so the generated public id is available to return.
+	 * </p>
+	 * @param metadataRequest the title, tags, visibility and other metadata
+	 * @return the saved blog's public id and lifecycle status
+	 */
+	@Transactional
+	public SaveMetadataResponse saveMetadata(BlogMetadataRequest metadataRequest) {
 
-        // Translate the request into a persistable blog with derived fields populated.
-        Blog blogWithMetadata = prepareBlog(metadataRequest);
+		// Translate the request into a persistable blog with derived fields populated.
+		Blog blogWithMetadata = prepareBlog(metadataRequest);
 
-        // Flush immediately so the DB-assigned public id is available for the response.
-        Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
+		// Flush immediately so the DB-assigned public id is available for the response.
+		Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
 
-        return SaveMetadataResponse.builder()
-                .blogPublicId(savedBlog.getPublicId())
-                .status(savedBlog.getStatus())
-                .build();
+		return SaveMetadataResponse.builder()
+			.blogPublicId(savedBlog.getPublicId())
+			.status(savedBlog.getStatus())
+			.build();
 
-    }
+	}
 
-    /**
-     * Builds a new {@link Blog} from the request, deriving slug, author and initial
-     * status.
-     *
-     * @param metadataRequest the incoming metadata
-     * @return the blog entity ready to persist
-     */
-    private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
+	/**
+	 * Builds a new {@link Blog} from the request, deriving slug, author and initial
+	 * status.
+	 * @param metadataRequest the incoming metadata
+	 * @return the blog entity ready to persist
+	 */
+	private Blog prepareBlog(BlogMetadataRequest metadataRequest) {
 
-        // Author is taken from the authenticated principal; slug is derived from the
-        // title; the blog
-        return Blog.builder()
-                .title(metadataRequest.getTitle())
-                .summary(metadataRequest.getSummary())
-                .authorPublicId(authUtil.getAuthorIdFromSecurityContext())
-                .coverImageUrl(metadataRequest.getCoverImageUrl())
-                .visibility(Visibility.fromString(metadataRequest.getVisibility()))
-                .slug(slugGeneratorService.generate(metadataRequest.getTitle()))
-                .status(BlogStatus.fromString(metadataRequest.getStatus()))
-                .build();
+		// Author is taken from the authenticated principal; slug is derived from the
+		// title; the blog
+		return Blog.builder()
+			.title(metadataRequest.getTitle())
+			.summary(metadataRequest.getSummary())
+			.authorPublicId(authUtil.getAuthorIdFromSecurityContext())
+			.coverImageUrl(metadataRequest.getCoverImageUrl())
+			.visibility(Visibility.fromString(metadataRequest.getVisibility()))
+			.slug(slugGeneratorService.generate(metadataRequest.getTitle()))
+			.status(BlogStatus.fromString(metadataRequest.getStatus()))
+			.build();
 
-    }
+	}
 
-    public Page<BlogSummaryResponse> getBlogMetadata(Pageable pageable) {
-        UUID authorId = authUtil.getAuthorIdFromSecurityContext();
-        log.info("Fetching blogs for author {}", authorId);
-        Page<BlogSummaryResponse> metadataResponses = blogRepository
-                .findAllByAuthorPublicIdOrderByCreatedAtDesc(authorId, pageable);
+	public Page<BlogSummaryResponse> getBlogMetadata(Pageable pageable) {
+		UUID authorId = authUtil.getAuthorIdFromSecurityContext();
+		log.info("Fetching blogs for author {}", authorId);
+		Page<BlogSummaryResponse> metadataResponses = blogRepository
+			.findAllByAuthorPublicIdOrderByCreatedAtDesc(authorId, pageable);
 
-        log.info("Found {} blogs for author {}", metadataResponses.getTotalElements(), authorId);
-        return metadataResponses;
+		log.info("Found {} blogs for author {}", metadataResponses.getTotalElements(), authorId);
+		return metadataResponses;
 
-    }
+	}
 
 }
