@@ -67,7 +67,7 @@ management:
       show-details: always
 
 app:
-  frontend-url: http://nullcanvas.blog
+  frontend-url: http://localhost:5173
   otp:
     otp-ttl: 5m
     rate-limit:
@@ -77,9 +77,13 @@ app:
       attempt:
         window: 5m
         retries: 5
+  chunk-size: 5000
+  recent-post-count: 5
+  s3:
+    bucket-name: nullcanvas-assets
+    region: ap-south-1
   mail:
     from: nullcanvas.admin@nullcanvas.blog
-
 
 
 logging:

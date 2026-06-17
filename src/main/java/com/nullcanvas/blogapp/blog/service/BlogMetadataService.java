@@ -1,6 +1,7 @@
 package com.nullcanvas.blogapp.blog.service;
 
 import com.nullcanvas.blogapp.blog.dto.projection.BlogSummaryResponse;
+import com.nullcanvas.blogapp.blog.dto.projection.PublicBlogSummaryResponse;
 import com.nullcanvas.blogapp.blog.dto.response.SaveMetadataResponse;
 import com.nullcanvas.blogapp.blog.repository.BlogRepository;
 import com.nullcanvas.blogapp.blog.dto.BlogStatus;
@@ -11,11 +12,14 @@ import com.nullcanvas.blogapp.blog.util.AuthUtil;
 import com.nullcanvas.blogapp.blog.util.BlogAppUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,6 +39,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class BlogMetadataService {
+
+	@Value("${app.recent-post-count}")
+	private String recentPostCount;
 
 	/**
 	 * General blog helper utilities.
@@ -112,6 +119,27 @@ public class BlogMetadataService {
 
 		log.info("Found {} blogs for author {}", metadataResponses.getTotalElements(), authorId);
 		return metadataResponses;
+
+	}
+
+	@Transactional
+	public void updateMetadata(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
+		log.info("Updating metadata for blog {}", blogPublicId);
+		blogRepository.findByPublicId(blogPublicId).ifPresent(blog -> {
+			blog.setTitle(metadataRequest.getTitle());
+			blog.setSummary(metadataRequest.getSummary());
+			blog.setCoverImageUrl(metadataRequest.getCoverImageUrl());
+			blog.setVisibility(Visibility.fromString(metadataRequest.getVisibility()));
+			blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
+			blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
+		});
+	}
+
+	public List<PublicBlogSummaryResponse> getRecentBlogs() {
+		log.info("Fetching recent blogs");
+
+		return blogRepository.findRecentPublicBlogs(Visibility.PUBLIC, BlogStatus.PUBLISHED,
+				Limit.of(Integer.parseInt(recentPostCount)));
 
 	}
 

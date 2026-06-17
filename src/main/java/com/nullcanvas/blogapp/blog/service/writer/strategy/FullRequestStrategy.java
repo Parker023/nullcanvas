@@ -54,16 +54,21 @@ public class FullRequestStrategy implements BlogContentHandleStrategy {
 	public void handle(BlogContentRequest contentRequest, UUID blogPublicId) {
 
 		// Guard: this strategy only handles full-content requests.
-		if (!(contentRequest instanceof FullContentRequest(JsonNode content)))
-			throw new InvalidRequestTypeException();
+
+		FullContentRequest fullRequest = getFullRequest(contentRequest);
+		JsonNode content = fullRequest.content();
 		Blog blog = blogRepository.findByPublicId(blogPublicId).orElseThrow(BlogNotFoundException::new);
 
 		// Persist the content as a JSON string and record its length for size tracking.
 		blog.setContentJson(content.toString());
 		blog.setContentSize((long) StringUtils.length(content.toString()));
 
-		blogRepository.save(blog);
+	}
 
+	private FullContentRequest getFullRequest(BlogContentRequest contentRequest) {
+		if (!(contentRequest instanceof FullContentRequest(JsonNode content)))
+			throw new InvalidRequestTypeException();
+		return (FullContentRequest) contentRequest;
 	}
 
 }
