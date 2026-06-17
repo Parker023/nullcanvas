@@ -39,16 +39,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChunkRequestStrategy implements BlogContentHandleStrategy {
 
-	/** Persistence for individual chunks. */
+	/**
+	 * Persistence for individual chunks.
+	 */
 	private final ChunkStoreRepository chunkStoreRepository;
 
-	/** Blog metadata service (available for related metadata operations). */
+	/**
+	 * Blog metadata service (available for related metadata operations).
+	 */
 	private final BlogMetadataService blogMetadataService;
 
-	/** Persistence for blogs. */
+	/**
+	 * Persistence for blogs.
+	 */
 	private final BlogRepository blogRepository;
 
-	/** Reused to store the assembled body once all chunks have arrived. */
+	/**
+	 * Reused to store the assembled body once all chunks have arrived.
+	 */
 	private final FullRequestStrategy fullRequestStrategy;
 
 	/**
@@ -132,16 +140,19 @@ public class ChunkRequestStrategy implements BlogContentHandleStrategy {
 	 */
 	private JsonNode assembleChunks(List<ChunkStore> chunks) {
 
-		// Join the chunk strings in their existing (sequence) to rebuild the body.
 		String content = chunks.stream().map(ChunkStore::getChunk).collect(Collectors.joining());
 
-		// Wrap the assembled text in a JSON object so it matches the blog's JSONB content
-		// shape.
 		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode contentNode = mapper.createObjectNode();
 
-		contentNode.put("content", content);
-		return contentNode;
+		try {
+
+			return mapper.readTree(content);
+
+		}
+		catch (Exception ex) {
+
+			throw new RuntimeException("Failed to reconstruct blog content", ex);
+		}
 	}
 
 }

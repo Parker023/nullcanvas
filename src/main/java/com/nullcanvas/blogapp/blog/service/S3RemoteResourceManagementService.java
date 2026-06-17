@@ -1,7 +1,9 @@
 package com.nullcanvas.blogapp.blog.service;
 
 import com.nullcanvas.blogapp.blog.dto.RemoteUploadType;
+import com.nullcanvas.blogapp.blog.repository.BlogRepository;
 import com.nullcanvas.blogapp.blog.util.BlogAppUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -34,7 +36,10 @@ public class S3RemoteResourceManagementService implements RemoteResourceManageme
 
 	private final BlogAppUtil appUtil;
 
+	private final BlogRepository blogRepository;
+
 	@Override
+	@Transactional
 	public String upload(MultipartFile file, RemoteUploadType type, UUID blogId) {
 		log.info("Uploading file {} to S3", file.getName());
 
@@ -49,7 +54,12 @@ public class S3RemoteResourceManagementService implements RemoteResourceManageme
 		try {
 			s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-			return String.format("https://%s.s3.ap-south-1.amazonaws.com/%s", bucketName, partition);
+			String s3url = String.format("https://%s.s3.ap-south-1.amazonaws.com/%s", bucketName, partition);
+
+			blogRepository.findByPublicId(blogId).ifPresent(blog -> {
+				blog.setCoverImageUrl(s3url);
+			});
+			return s3url;
 		}
 		catch (IOException e) {
 			log.error("Error uploading file to S3", e);
