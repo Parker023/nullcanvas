@@ -54,7 +54,7 @@ public class S3RemoteResourceManagementService implements RemoteResourceManageme
 		try {
 			s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-			String s3url= String.format("https://%s.s3.ap-south-1.amazonaws.com/%s", bucketName, partition);
+			String s3url = String.format("https://%s.s3.ap-south-1.amazonaws.com/%s", bucketName, partition);
 
 			blogRepository.findByPublicId(blogId).ifPresent(blog -> {
 				blog.setCoverImageUrl(s3url);
