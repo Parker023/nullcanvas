@@ -28,7 +28,9 @@ import java.util.UUID;
 @Slf4j
 public class BlogContentHandlerService {
 
-	/** Resolves the content-handling strategy matching a request's handle type. */
+	/**
+	 * Resolves the content-handling strategy matching a request's handle type.
+	 */
 	private final BlogContentHandlerStrategyFactory blogContentHandlerStrategyFactory;
 
 	/**

@@ -1,12 +1,14 @@
 package com.nullcanvas.blogapp.blog.controller;
 
 import com.nullcanvas.blogapp.blog.dto.projection.BlogSummaryResponse;
+import com.nullcanvas.blogapp.blog.dto.projection.PublicBlogSummaryResponse;
 import com.nullcanvas.blogapp.blog.dto.request.BlogMetadataRequest;
 import com.nullcanvas.blogapp.blog.dto.request.ChunkContentRequest;
 import com.nullcanvas.blogapp.blog.dto.request.FullContentRequest;
 import com.nullcanvas.blogapp.blog.dto.response.BlogContentResponse;
 import com.nullcanvas.blogapp.blog.dto.response.FullContentResponse;
 import com.nullcanvas.blogapp.blog.dto.response.SaveMetadataResponse;
+import com.nullcanvas.blogapp.blog.service.BlogManagementService;
 import com.nullcanvas.blogapp.blog.service.reader.BlogContentReaderOrchestrator;
 import com.nullcanvas.blogapp.blog.service.writer.BlogContentHandlerService;
 import com.nullcanvas.blogapp.blog.service.BlogMetadataService;
@@ -15,9 +17,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +57,15 @@ public class BlogController {
 	 * content retrieval strategies for full and chunked blog content.
 	 */
 	private final BlogContentReaderOrchestrator contentReaderOrchestrator;
+
+	/**
+	 * Handles business logic related to blog management, including operations for
+	 * creating, updating, retrieving, and deleting blogs. Acts as the central service for
+	 * coordinating blog content and metadata handling, leveraging underlying services for
+	 * different aspects of blog operations, such as content storage and metadata
+	 * management.
+	 */
+	private final BlogManagementService blogManagementService;
 
 	/**
 	 * Creates a blog's metadata record, the first step before any content is uploaded.
@@ -125,6 +138,39 @@ public class BlogController {
 			@PathVariable String slug) {
 		FullContentResponse fullContent = contentReaderOrchestrator.getFullContent(blogPublicId);
 		return ResponseEntity.ok(fullContent);
+	}
+
+	@DeleteMapping("/{blogId}")
+	public ResponseEntity<Void> deleteBlog(@PathVariable UUID blogId) {
+		blogManagementService.deleteBlog(blogId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/content/{blogId}")
+	public ResponseEntity<Void> updateBlog(@PathVariable UUID blogId) {
+		blogManagementService.updateBlog(blogId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("{blogId}/metadata")
+	public ResponseEntity<Void> updateContent(@RequestBody BlogMetadataRequest metadataRequest,
+			@PathVariable UUID blogId) {
+		blogMetadataService.updateMetadata(metadataRequest, blogId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PutMapping("/{blogId}/content")
+	public ResponseEntity<Void> updateContent(@RequestBody FullContentRequest contentRequest,
+			@PathVariable UUID blogId) {
+		contentHandlerService.handleContent(contentRequest, blogId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/recent")
+	public ResponseEntity<List<PublicBlogSummaryResponse>> getRecentBlogs() {
+
+		List<PublicBlogSummaryResponse> responseList = blogMetadataService.getRecentBlogs();
+		return ResponseEntity.ok(responseList);
 	}
 
 }
