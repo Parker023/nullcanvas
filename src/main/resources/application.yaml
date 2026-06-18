@@ -67,7 +67,7 @@ management:
       show-details: always
 
 app:
-  frontend-url: http://localhost:5173
+  frontend-url: https://nullcanvas.blog
   otp:
     otp-ttl: 5m
     rate-limit:
