@@ -81,6 +81,9 @@ public class FullContentReaderImpl implements FullContentReader {
 	 * @throws ContentParsingException if a parsing error occurs
 	 */
 	private JsonNode parseContent(Blog blog) {
+		if (blog.getContentJson() == null) {
+			return null;
+		}
 		try {
 			return objectMapper.readTree(blog.getContentJson());
 		}

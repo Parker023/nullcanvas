@@ -8,6 +8,7 @@ import com.nullcanvas.blogapp.blog.dto.BlogStatus;
 import com.nullcanvas.blogapp.blog.dto.Visibility;
 import com.nullcanvas.blogapp.blog.dto.request.BlogMetadataRequest;
 import com.nullcanvas.blogapp.blog.model.Blog;
+import com.nullcanvas.blogapp.blog.service.tags.BlogTagManager;
 import com.nullcanvas.blogapp.blog.util.AuthUtil;
 import com.nullcanvas.blogapp.blog.util.BlogAppUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Persists the metadata phase of blog creation, returning the handle used for content
@@ -63,6 +65,8 @@ public class BlogMetadataService {
 	 */
 	private final SlugGeneratorService slugGeneratorService;
 
+	private final BlogTagManager blogTagManager;
+
 	/**
 	 * Saves a new blog's metadata and returns its public id and status.
 	 *
@@ -79,8 +83,12 @@ public class BlogMetadataService {
 		// Translate the request into a persistable blog with derived fields populated.
 		Blog blogWithMetadata = prepareBlog(metadataRequest);
 
-		// Flush immediately so the DB-assigned public id is available for the response.
+		// Flush immediately, so the DB-assigned public id is available for the response.
 		Blog savedBlog = blogRepository.saveAndFlush(blogWithMetadata);
+
+		CompletableFuture
+			.runAsync(() -> blogTagManager.assignTagToBlog(savedBlog.getPublicId(), metadataRequest.getTags()))
+			.join();
 
 		return SaveMetadataResponse.builder()
 			.blogPublicId(savedBlog.getPublicId())

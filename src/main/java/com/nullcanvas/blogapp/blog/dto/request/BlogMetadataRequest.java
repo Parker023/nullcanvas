@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Request body describing a blog's metadata, submitted before any content is uploaded.
@@ -33,7 +34,7 @@ public class BlogMetadataRequest {
 	private String visibility;
 
 	/** Optional list of tag names to associate with the blog. */
-	private List<String> tags;
+	private List<UUID> tags;
 
 	// TODO we are setting status as in_progress in beginning, what if user selected
 	// published or draft in beginning?
