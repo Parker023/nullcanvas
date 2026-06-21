@@ -5,6 +5,7 @@ import com.nullcanvas.blogapp.blog.dto.Visibility;
 import lombok.Builder;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,5 +14,5 @@ import java.util.UUID;
  */
 @Builder
 public record MetadataResponse(String title, String summary, String slug, String coverImageUrl, BlogStatus status,
-		Visibility visibility, UUID publicId, Instant createdAt, long contentSize) {
+		Visibility visibility, UUID publicId, Instant createdAt, long contentSize, List<TagDetailsResponse> tags) {
 }

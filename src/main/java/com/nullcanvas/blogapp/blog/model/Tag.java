@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Persistent tag, mapped to the {@code tag_store} table.
+ * Persistent tag, mapped to the {@code tags} table.
  *
  * <p>
  * Tag names are unique so the same label is shared across blogs rather than duplicated,
@@ -21,7 +21,7 @@ import lombok.Setter;
  * @since 01/06/26
  */
 @Entity
-@Table(name = "tag_store")
+@Table(name = "tags")
 @Getter
 @Setter
 @Builder
@@ -29,8 +29,16 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Tag extends BaseEntity {
 
-	/** The tag's unique label. */
+	/**
+	 * The tag's unique label.
+	 */
 	@Column(name = "tag_name", nullable = false, unique = true)
 	private String name;
+
+	@Column(name = "tag_slug", nullable = false)
+	private String slug;
+
+	@Column(name = "usage_count")
+	private long usageCount;
 
 }
