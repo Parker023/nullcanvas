@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.blog.service.tags.impl;
 
+import com.nullcanvas.blogapp.blog.dto.request.CreateTagRequest;
 import com.nullcanvas.blogapp.blog.dto.response.TagDetailsResponse;
 import com.nullcanvas.blogapp.blog.exception.TagAlreadyExistsException;
 import com.nullcanvas.blogapp.blog.model.Tag;
@@ -40,7 +41,9 @@ public class TagManagementServiceImpl implements TagManagementService {
 
     @Override
     @Transactional
-    public TagDetailsResponse createTag(String tagName) {
+    public TagDetailsResponse createTag(CreateTagRequest request) {
+
+        String tagName = request.name();
 
         if (StringUtils.isBlank(tagName)) {
             throw new IllegalArgumentException("Tag name cannot be blank");

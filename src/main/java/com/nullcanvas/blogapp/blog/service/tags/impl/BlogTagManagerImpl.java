@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.blog.service.tags.impl;
 
+import com.nullcanvas.blogapp.blog.dto.response.TagDetailsResponse;
 import com.nullcanvas.blogapp.blog.model.BlogTag;
 import com.nullcanvas.blogapp.blog.repository.BlogTagRepository;
 import com.nullcanvas.blogapp.blog.service.tags.BlogTagManager;
@@ -56,6 +57,9 @@ public class BlogTagManagerImpl implements BlogTagManager {
         // wait for to delete to complete
         blogTagDeletes.join();
 
+
+        tagManagementService.handleUsage(tagIds);
+
         // cleanup memory
 
         blogTagsList.clear();
@@ -72,6 +76,17 @@ public class BlogTagManagerImpl implements BlogTagManager {
         blogTagRepository.deleteAllByBlogPublicIdAndTagPublicIdIn(blogId, tagIds);
         log.info("Removed tags {} from blog {}", tagIds, blogId);
 
+    }
+
+    @Override
+    public List<TagDetailsResponse> getTagsForBlog(UUID publicId) {
+
+        return blogTagRepository.getTagsForBlog(publicId)
+                .stream().map(tagProjection -> TagDetailsResponse.builder()
+                        .name(tagProjection.getTagName())
+                        .tagPublicId(tagProjection.getPublicId())
+                        .build())
+                .toList();
     }
 
 }

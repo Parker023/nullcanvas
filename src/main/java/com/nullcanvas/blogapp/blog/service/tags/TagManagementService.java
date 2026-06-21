@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.blog.service.tags;
 
+import com.nullcanvas.blogapp.blog.dto.request.CreateTagRequest;
 import com.nullcanvas.blogapp.blog.dto.response.TagDetailsResponse;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.UUID;
  */
 public interface TagManagementService {
 
-    TagDetailsResponse createTag(String tagName);
+    TagDetailsResponse createTag(CreateTagRequest request);
 
     void deleteTag(UUID tagPublicId);
 

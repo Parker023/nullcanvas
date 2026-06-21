@@ -1,5 +1,6 @@
 package com.nullcanvas.blogapp.blog.controller;
 
+import com.nullcanvas.blogapp.blog.dto.request.CreateTagRequest;
 import com.nullcanvas.blogapp.blog.dto.response.TagDetailsResponse;
 import com.nullcanvas.blogapp.blog.service.tags.TagManagementService;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,9 +36,9 @@ public class TagController {
 
 	}
 
-	@PostMapping("/")
-	public ResponseEntity<TagDetailsResponse> createTag(String tagName) {
-		return ResponseEntity.ok(tagManagementService.createTag(tagName));
+	@PostMapping
+	public ResponseEntity<TagDetailsResponse> createTag(@RequestBody CreateTagRequest createTagRequest) {
+		return ResponseEntity.ok(tagManagementService.createTag(createTagRequest));
 	}
 
 	@DeleteMapping("/{tagId}")

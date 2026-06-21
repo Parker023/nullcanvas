@@ -1,5 +1,7 @@
 package com.nullcanvas.blogapp.blog.service.tags;
 
+import com.nullcanvas.blogapp.blog.dto.response.TagDetailsResponse;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -13,4 +15,5 @@ public interface BlogTagManager {
 
 	void removeTagFromBlog(UUID blogId, List<UUID> tagIds);
 
+	List<TagDetailsResponse> getTagsForBlog(UUID publicId);
 }

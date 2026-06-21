@@ -39,47 +39,70 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 public class Blog extends BaseEntity {
 
-	/** Public id of the user who authored the blog. */
-	@Column(name = "author_id", nullable = false)
-	private UUID authorPublicId;
+    /**
+     * Public id of the user who authored the blog.
+     */
+    @Column(name = "author_id", nullable = false)
+    private UUID authorPublicId;
 
-	/** The blog's title. */
-	@Column(name = "title", nullable = false)
-	private String title;
+    /**
+     * The blog's title.
+     */
+    @Column(name = "title", length = 500)
+    private String title;
 
-	/** URL-friendly slug derived from the title. */
-	@Column(name = "slug", nullable = false)
-	private String slug;
+    /**
+     * URL-friendly slug derived from the title.
+     */
+    @Column(name = "slug", length = 500)
+    private String slug;
 
-	/** Optional short summary. */
-	@Column(name = "summary")
-	private String summary;
+    /**
+     * Optional short summary.
+     */
+    @Column(name = "summary", length = 1000)
+    private String summary;
 
-	/** The assembled blog body, stored as JSONB in Postgres. */
-	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(name = "content", columnDefinition = "jsonb")
-	private String contentJson;
+    /**
+     * The assembled blog body, stored as JSONB in Postgres.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "content", columnDefinition = "jsonb")
+    private String contentJson;
 
-	/** Optional cover image URL. */
-	@Column(name = "cover_image_url")
-	private String coverImageUrl;
+    /**
+     * Optional cover image URL.
+     */
+    @Column(name = "cover_image_url")
+    private String coverImageUrl;
 
-	/** Lifecycle status persisted as its enum name. */
-	@Column(name = "status", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private BlogStatus status;
+    /**
+     * Lifecycle status persisted as its enum name.
+     */
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BlogStatus status;
 
-	/** Visibility (public/private), persisted as its enum name. */
-	@Column(name = "visibility", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private Visibility visibility;
+    /**
+     * Visibility (public/private), persisted as its enum name.
+     */
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Visibility visibility;
 
-	/** When the blog was published, if it has been. */
-	@Column(name = "published_at")
-	private Instant publishedAt;
+    /**
+     * When the blog was published, if it has been.
+     */
+    @Column(name = "published_at")
+    private Instant publishedAt;
 
-	/** Size of the stored content, in bytes/characters. */
-	@Column(name = "content_size")
-	private Long contentSize;
+    /**
+     * Size of the stored content, in bytes/characters.
+     */
+    @Column(name = "content_size")
+    private Long contentSize;
+
+    @Column(name = "initialized_draft", columnDefinition = "boolean default false")
+    private boolean initializedDraft;
 
 }

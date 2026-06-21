@@ -19,26 +19,37 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BlogMetadataRequest {
 
-	/** The blog's title; required. */
-	@NotBlank(message = "title cannot be null")
-	private String title;
+    /**
+     * The blog's title; required.
+     */
+    @NotBlank(message = "title cannot be null")
+    private String title;
 
-	/** Optional short summary of the blog. */
-	private String summary;
+    /**
+     * Optional short summary of the blog.
+     */
+    private String summary;
 
-	/** Optional URL of the blog's cover image. */
-	private String coverImageUrl;
+    /**
+     * Optional URL of the blog's cover image.
+     */
+    private String coverImageUrl;
 
-	/** Visibility (public/private); required. */
-	@NotBlank(message = "visibility cannot be null")
-	private String visibility;
+    /**
+     * Visibility (public/private); required.
+     */
+    @NotBlank(message = "visibility cannot be null")
+    private String visibility;
 
-	/** Optional list of tag names to associate with the blog. */
-	private List<UUID> tags;
+    /**
+     * Optional list of tag names to associate with the blog.
+     */
+    private List<UUID> tags;
 
-	// TODO we are setting status as in_progress in beginning, what if user selected
-	// published or draft in beginning?
-	/** Optional initial lifecycle status; defaults to in-progress when omitted. */
-	private String status;
-
+    // TODO we are setting status as in_progress in beginning, what if user selected
+    // published or draft in beginning?
+    /**
+     * Optional initial lifecycle status; defaults to in-progress when omitted.
+     */
+    private String status;
 }
