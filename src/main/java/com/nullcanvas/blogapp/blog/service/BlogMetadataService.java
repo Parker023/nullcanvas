@@ -45,115 +45,108 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class BlogMetadataService {
 
-    @Value("${app.recent-post-count}")
-    private String recentPostCount;
+	@Value("${app.recent-post-count}")
+	private String recentPostCount;
 
-    /**
-     * General blog helper utilities.
-     */
-    private final BlogAppUtil appUtil;
+	/**
+	 * General blog helper utilities.
+	 */
+	private final BlogAppUtil appUtil;
 
-    /**
-     * Persistence for blogs.
-     */
-    private final BlogRepository blogRepository;
+	/**
+	 * Persistence for blogs.
+	 */
+	private final BlogRepository blogRepository;
 
-    /**
-     * Resolves the current author's id from the security context.
-     */
-    private final AuthUtil authUtil;
+	/**
+	 * Resolves the current author's id from the security context.
+	 */
+	private final AuthUtil authUtil;
 
-    /**
-     * Generates URL-friendly slugs from titles.
-     */
-    private final SlugGeneratorService slugGeneratorService;
+	/**
+	 * Generates URL-friendly slugs from titles.
+	 */
+	private final SlugGeneratorService slugGeneratorService;
 
-    private final BlogTagManager blogTagManager;
+	private final BlogTagManager blogTagManager;
 
-    /**
-     * Saves a new blog's metadata and returns its public id and status.
-     *
-     * <p>
-     * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
-     * the insert immediately so the generated public id is available to return.
-     * </p>
-     *
-     * @param metadataRequest the title, tags, visibility and other metadata
-     * @return the saved blog's public id and lifecycle status
-     */
-    @Transactional
-    public SaveMetadataResponse saveMetadata(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
+	/**
+	 * Saves a new blog's metadata and returns its public id and status.
+	 *
+	 * <p>
+	 * Transactional so the blog row is committed atomically; {@code saveAndFlush} forces
+	 * the insert immediately so the generated public id is available to return.
+	 * </p>
+	 * @param metadataRequest the title, tags, visibility and other metadata
+	 * @return the saved blog's public id and lifecycle status
+	 */
+	@Transactional
+	public SaveMetadataResponse saveMetadata(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
 
-        // Translate the request into a persistable blog with derived fields populated.
-        Blog blog = blogRepository.findByPublicId(blogPublicId).orElseThrow(BlogNotFoundException::new);
+		// Translate the request into a persistable blog with derived fields populated.
+		Blog blog = blogRepository.findByPublicId(blogPublicId).orElseThrow(BlogNotFoundException::new);
 
-        blog.setTitle(metadataRequest.getTitle());
-        blog.setSummary(metadataRequest.getSummary());
-        blog.setCoverImageUrl(metadataRequest.getCoverImageUrl());
-        blog.setVisibility(Visibility.fromString(metadataRequest.getVisibility()));
-        blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
-        blog.setInitializedDraft(false);
-        blog.setSlug(slugGeneratorService.generate(metadataRequest.getTitle()));
+		blog.setTitle(metadataRequest.getTitle());
+		blog.setSummary(metadataRequest.getSummary());
+		blog.setCoverImageUrl(metadataRequest.getCoverImageUrl());
+		blog.setVisibility(Visibility.fromString(metadataRequest.getVisibility()));
+		blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
+		blog.setInitializedDraft(false);
+		blog.setSlug(slugGeneratorService.generate(metadataRequest.getTitle()));
 
+		CompletableFuture.runAsync(() -> blogTagManager.assignTagToBlog(blog.getPublicId(), metadataRequest.getTags()))
+			.join();
 
-        CompletableFuture
-                .runAsync(() -> blogTagManager.assignTagToBlog(blog.getPublicId(), metadataRequest.getTags()))
-                .join();
+		return SaveMetadataResponse.builder().blogPublicId(blog.getPublicId()).status(blog.getStatus()).build();
 
-        return SaveMetadataResponse.builder()
-                .blogPublicId(blog.getPublicId())
-                .status(blog.getStatus())
-                .build();
+	}
 
-    }
+	public Page<BlogSummaryResponse> getBlogMetadata(Pageable pageable) {
+		UUID authorId = authUtil.getAuthorIdFromSecurityContext();
+		log.info("Fetching blogs for author {}", authorId);
+		Page<BlogSummaryResponse> metadataResponses = blogRepository
+			.findAllByAuthorPublicIdOrderByCreatedAtDesc(authorId, pageable);
 
+		log.info("Found {} blogs for author {}", metadataResponses.getTotalElements(), authorId);
+		return metadataResponses;
 
-    public Page<BlogSummaryResponse> getBlogMetadata(Pageable pageable) {
-        UUID authorId = authUtil.getAuthorIdFromSecurityContext();
-        log.info("Fetching blogs for author {}", authorId);
-        Page<BlogSummaryResponse> metadataResponses = blogRepository
-                .findAllByAuthorPublicIdOrderByCreatedAtDesc(authorId, pageable);
+	}
 
-        log.info("Found {} blogs for author {}", metadataResponses.getTotalElements(), authorId);
-        return metadataResponses;
+	@Transactional
+	public void updateMetadata(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
+		log.info("Updating metadata for blog {}", blogPublicId);
+		blogRepository.findByPublicId(blogPublicId).ifPresent(blog -> {
+			blog.setTitle(metadataRequest.getTitle());
+			blog.setSummary(metadataRequest.getSummary());
+			blog.setCoverImageUrl(metadataRequest.getCoverImageUrl());
+			blog.setVisibility(Visibility.fromString(metadataRequest.getVisibility()));
+			blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
+		});
+	}
 
-    }
+	public List<PublicBlogSummaryResponse> getRecentBlogs() {
+		log.info("Fetching recent blogs");
 
-    @Transactional
-    public void updateMetadata(BlogMetadataRequest metadataRequest, UUID blogPublicId) {
-        log.info("Updating metadata for blog {}", blogPublicId);
-        blogRepository.findByPublicId(blogPublicId).ifPresent(blog -> {
-            blog.setTitle(metadataRequest.getTitle());
-            blog.setSummary(metadataRequest.getSummary());
-            blog.setCoverImageUrl(metadataRequest.getCoverImageUrl());
-            blog.setVisibility(Visibility.fromString(metadataRequest.getVisibility()));
-            blog.setStatus(BlogStatus.fromString(metadataRequest.getStatus()));
-        });
-    }
+		return blogRepository.findRecentPublicBlogs(Visibility.PUBLIC, BlogStatus.PUBLISHED,
+				Limit.of(Integer.parseInt(recentPostCount)));
 
-    public List<PublicBlogSummaryResponse> getRecentBlogs() {
-        log.info("Fetching recent blogs");
+	}
 
-        return blogRepository.findRecentPublicBlogs(Visibility.PUBLIC, BlogStatus.PUBLISHED,
-                Limit.of(Integer.parseInt(recentPostCount)));
+	@Transactional
+	public BlogShellResponse createBlogShell() {
+		Blog blog = Blog.builder()
+			.status(BlogStatus.DRAFT)
+			.visibility(Visibility.PRIVATE)
+			.authorPublicId(authUtil.getAuthorIdFromSecurityContext())
+			.slug("empty-title")
+			.initializedDraft(true)
+			.build();
 
-    }
+		blogRepository.save(blog);
+		log.info("Created blog shell {}", blog.getPublicId());
 
-    @Transactional
-    public BlogShellResponse createBlogShell() {
-        Blog blog = Blog.builder()
-                .status(BlogStatus.DRAFT)
-                .visibility(Visibility.PRIVATE)
-                .authorPublicId(authUtil.getAuthorIdFromSecurityContext())
-                .slug("empty-title")
-                .initializedDraft(true)
-                .build();
+		return BlogShellResponse.builder().blogPublicId(blog.getPublicId()).build();
 
-        blogRepository.save(blog);
-        log.info("Created blog shell {}", blog.getPublicId());
+	}
 
-        return BlogShellResponse
-                .builder().blogPublicId(blog.getPublicId()).build();
-
-    }
 }

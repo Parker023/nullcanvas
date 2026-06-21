@@ -20,13 +20,14 @@ import java.util.UUID;
 @Repository
 public interface BlogTagRepository extends JpaRepository<BlogTag, Long> {
 
-    List<BlogTag> findAllByBlogPublicIdAndTagPublicIdIn(UUID blogPublicId, Collection<UUID> tagPublicIds);
+	List<BlogTag> findAllByBlogPublicIdAndTagPublicIdIn(UUID blogPublicId, Collection<UUID> tagPublicIds);
 
-    int deleteAllByBlogPublicIdAndTagPublicIdIn(UUID blogPublicId, Collection<UUID> tagPublicIds);
+	int deleteAllByBlogPublicIdAndTagPublicIdIn(UUID blogPublicId, Collection<UUID> tagPublicIds);
 
-    List<BlogTag> findAllByBlogPublicId(UUID blogPublicId);
+	List<BlogTag> findAllByBlogPublicId(UUID blogPublicId);
 
-    @Query(value = "select t.tag_name, t.public_id from tags t join blog_tag bt on bt.tag_public_id=t.public_id where bt.blog_public_id=:blogId", nativeQuery = true)
-    List<TagProjection> getTagsForBlog(@Param("blogId") UUID blogId);
+	@Query(value = "select t.tag_name, t.public_id from tags t join blog_tag bt on bt.tag_public_id=t.public_id where bt.blog_public_id=:blogId",
+			nativeQuery = true)
+	List<TagProjection> getTagsForBlog(@Param("blogId") UUID blogId);
 
 }

@@ -16,4 +16,5 @@ public interface BlogTagManager {
 	void removeTagFromBlog(UUID blogId, List<UUID> tagIds);
 
 	List<TagDetailsResponse> getTagsForBlog(UUID publicId);
+
 }

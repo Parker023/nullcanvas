@@ -12,12 +12,12 @@ import java.util.UUID;
  */
 public interface TagManagementService {
 
-    TagDetailsResponse createTag(CreateTagRequest request);
+	TagDetailsResponse createTag(CreateTagRequest request);
 
-    void deleteTag(UUID tagPublicId);
+	void deleteTag(UUID tagPublicId);
 
-    List<TagDetailsResponse> getTags();
+	List<TagDetailsResponse> getTags();
 
-    void handleUsage(List<UUID> tagPublicIds);
+	void handleUsage(List<UUID> tagPublicIds);
 
 }
