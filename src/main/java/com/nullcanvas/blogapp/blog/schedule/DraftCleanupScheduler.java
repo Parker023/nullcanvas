@@ -15,20 +15,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DraftCleanupScheduler {
 
-    private final BlogManagementService blogManagementService;
+	private final BlogManagementService blogManagementService;
 
-    @Scheduled(cron = "0 */30 * * * *")
-    public void cleanupDrafts() {
+	@Scheduled(cron = "0 */30 * * * *")
+	public void cleanupDrafts() {
 
-        int deleted =
-                blogManagementService
-                        .cleanupAbandonedDrafts();
+		int deleted = blogManagementService.cleanupAbandonedDrafts();
 
-        log.info(
-                "Deleted {} abandoned drafts",
-                deleted
-        );
-    }
-
+		log.info("Deleted {} abandoned drafts", deleted);
+	}
 
 }

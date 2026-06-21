@@ -7,7 +7,9 @@ import java.util.UUID;
  * @since 19/06/26
  */
 public interface TagProjection {
-    String getTagName();
 
-    UUID getPublicId();
+	String getTagName();
+
+	UUID getPublicId();
+
 }
