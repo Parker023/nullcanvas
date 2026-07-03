@@ -59,7 +59,8 @@ public class SecurityConfig {
 			// secure the rest.
 			.authorizeHttpRequests(req -> req.requestMatchers(HttpMethod.OPTIONS, "/**")
 				.permitAll()
-				.requestMatchers("/auth/**", "/oauth2/**", "/login/oauth2/**", "/actuator/health", "/error")
+				.requestMatchers("/auth/**", "/oauth2/**", "/login/oauth2/**", "/actuator/health", "/error",
+						"/blog/v1/recent", "/blog/v1/content/*/*")
 				.permitAll()
 				.anyRequest()
 				.authenticated())
