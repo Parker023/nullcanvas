@@ -46,8 +46,6 @@ jobs:
     name: Build & push image
     needs: build
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.image.outputs.uri }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -70,7 +68,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag and push image
-        id: image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
@@ -78,8 +75,6 @@ jobs:
           IMAGE="$REGISTRY/$REPOSITORY:$IMAGE_TAG"
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
-          # Expose the pushed image URI to the deploy job.
-          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
 
   # 3. Roll the new image out to the ECS service.
   deploy:
@@ -94,10 +89,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Render new task definition
         env:
-          IMAGE: ${{ needs.publish.outputs.image }}
+          IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
         run: |
+          # Fail fast with a clear message rather than registering an empty image.
+          if [ -z "${IMAGE#*/}" ] || [ "$IMAGE" = "/:" ]; then
+            echo "Resolved image is empty: '$IMAGE'"; exit 1
+          fi
           aws ecs describe-task-definition \
             --task-definition ${{ secrets.ECS_TASK_DEFINITION }} \
             > task-definition.json
