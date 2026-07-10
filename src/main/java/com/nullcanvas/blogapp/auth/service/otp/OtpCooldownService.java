@@ -1,8 +1,9 @@
 package com.nullcanvas.blogapp.auth.service.otp;
 
-import lombok.RequiredArgsConstructor;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -11,23 +12,25 @@ import java.time.Duration;
  * Enforces a minimum cooldown between successive OTP issuances for the same email.
  *
  * <p>
- * Uses a short-lived Redis key as a lock: while it exists, resends are refused; its TTL
- * defines the cooldown length.
+ * Uses a short-lived in-memory marker as a lock: while it is present, resends are
+ * refused; the cache TTL defines the cooldown length.
  * </p>
  */
 @Service
-@RequiredArgsConstructor
 public class OtpCooldownService {
 
 	/** Minimum time that must pass before another OTP can be sent to the same email. */
 	@Value("${app.otp.rate-limit.cooldown}")
 	private Duration cooldown;
 
-	/** Namespace prefix for the cooldown marker keys. */
-	private static final String PREFIX = "auth:otp:cooldown:";
+	/** Per-email cooldown markers that expire after {@link #cooldown}. */
+	private Cache<String, Boolean> cooldownCache;
 
-	/** Redis access for the cooldown markers. */
-	private final StringRedisTemplate redisTemplate;
+	/** Builds the cooldown cache once the configured duration is available. */
+	@PostConstruct
+	public void init() {
+		cooldownCache = Caffeine.newBuilder().expireAfterWrite(cooldown).build();
+	}
 
 	/**
 	 * Checks whether a new OTP may be sent and, if so, starts the cooldown window.
@@ -37,18 +40,13 @@ public class OtpCooldownService {
 	 */
 	public boolean canResend(String email) {
 
-		String key = PREFIX + email;
-
-		// Presence of the key means a previous send is still within its cooldown.
-		Boolean exists = redisTemplate.hasKey(key);
-
-		if (Boolean.TRUE.equals(exists)) {
+		// Presence of a marker means a previous send is still within its cooldown.
+		if (cooldownCache.getIfPresent(email) != null) {
 			return false;
 		}
 
-		// Set the cooldown marker with the configured TTL; it auto-clears when the window
-		// ends.
-		redisTemplate.opsForValue().set(key, "1", cooldown);
+		// Set the cooldown marker; it auto-clears when the window ends.
+		cooldownCache.put(email, Boolean.TRUE);
 
 		return true;
 	}

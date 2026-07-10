@@ -42,7 +42,7 @@ dependencies {
 
     // Mail and caching
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // Apache utility libraries
     implementation 'org.apache.commons:commons-lang3:3.18.0'
