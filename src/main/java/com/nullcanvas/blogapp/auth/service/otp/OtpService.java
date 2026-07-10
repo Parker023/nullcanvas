@@ -1,5 +1,7 @@
 package com.nullcanvas.blogapp.auth.service.otp;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.nullcanvas.blogapp.auth.dto.request.ResendOtpRequest;
 import com.nullcanvas.blogapp.auth.exception.CoolDownException;
 import com.nullcanvas.blogapp.auth.exception.TooManyFailedOtpVerificationException;
@@ -9,7 +11,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -20,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Orchestrates OTP generation, delivery and verification for email confirmation.
  *
  * <p>
- * OTPs are stored in Redis under a per-email key with a TTL, so they expire
+ * OTPs are held in an in-process Caffeine cache keyed by email with a TTL, so they expire
  * automatically. Before issuing a code this service enforces cooldown and rate-limit
  * rules, and during verification it tracks failed attempts to defend against brute-force
  * guessing.
@@ -34,28 +35,12 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public class OtpService {
 
-	/** How long a generated OTP remains valid before Redis expires it. */
+	/** How long a generated OTP remains valid before it expires from the cache. */
 	@Value("${app.otp.otp-ttl}")
 	private Duration ttl;
 
-	/** Redis host, logged at startup to confirm connectivity configuration. */
-	@Value("${spring.data.redis.host:NOT_SET}")
-	private String redisHost;
-
-	/**
-	 * Logs the resolved Redis host once the bean is initialised, as a configuration
-	 * sanity check.
-	 */
-	@PostConstruct
-	public void init() {
-		log.info("Redis host = {}", redisHost);
-	}
-
-	/** Namespace prefix for OTP keys so they don't collide with other Redis data. */
-	private static final String PREFIX = "auth:email-verification:";
-
-	/** Redis access for storing and reading OTP values. */
-	private final StringRedisTemplate redisTemplate;
+	/** In-memory store of issued OTPs, keyed by email, expiring after {@link #ttl}. */
+	private Cache<String, String> otpCache;
 
 	/** Enforces a minimum delay between successive OTP requests. */
 	private final OtpCooldownService otpCooldownService;
@@ -69,6 +54,12 @@ public class OtpService {
 	/** Sends the OTP email to the user. */
 	private final EmailService emailService;
 
+	/** Builds the TTL-bound OTP cache once the configured {@link #ttl} is available. */
+	@PostConstruct
+	public void init() {
+		otpCache = Caffeine.newBuilder().expireAfterWrite(ttl).build();
+	}
+
 	/**
 	 * Generates a fresh OTP, stores it with a TTL, and emails it asynchronously.
 	 * @param email the recipient's email address
@@ -76,15 +67,13 @@ public class OtpService {
 	 */
 	public void sendVerificationOtp(String email) throws CoolDownException {
 
-		// TODO remove entries where email is not verified after 1 hr from createdDatetime
-
 		// Enforce cooldown and rate-limit before doing any work.
 		validateOtpRequest(email);
 
 		String otp = generateOtp();
 
-		// Persist the OTP keyed by email with the configured TTL so it self-expires.
-		redisTemplate.opsForValue().set(PREFIX + email, otp, ttl);
+		// Store the OTP keyed by email; the cache evicts it automatically after the TTL.
+		otpCache.put(email, otp);
 
 		// Send the email off the request thread so the caller isn't blocked on SMTP.
 		CompletableFuture.runAsync(() -> {
@@ -102,9 +91,9 @@ public class OtpService {
 	 */
 	public boolean validateOtp(String email, String otp) {
 
-		String storedOtp = redisTemplate.opsForValue().get(PREFIX + email);
+		String storedOtp = otpCache.getIfPresent(email);
 
-		// A missing key means the OTP never existed or has already expired.
+		// A missing entry means the OTP never existed or has already expired.
 		if (storedOtp == null) {
 			return false;
 		}
@@ -135,7 +124,7 @@ public class OtpService {
 	 */
 	public void deleteOtp(String email) {
 
-		redisTemplate.delete(PREFIX + email);
+		otpCache.invalidate(email);
 	}
 
 	/**
@@ -174,12 +163,9 @@ public class OtpService {
 	 */
 	public void resendOtp(ResendOtpRequest request) {
 
-		Boolean otpPresent = redisTemplate.hasKey(PREFIX + request.email());
-
 		log.info("otp re-sending for {}", request.email());
 		// Invalidate the previous OTP so a resend cannot leave two valid codes.
-		if (otpPresent)
-			redisTemplate.delete(PREFIX + request.email());
+		otpCache.invalidate(request.email());
 
 		sendVerificationOtp(request.email());
 

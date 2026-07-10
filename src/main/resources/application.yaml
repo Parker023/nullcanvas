@@ -45,13 +45,6 @@ spring:
           starttls:
             enable: true
 
-  data:
-    redis:
-      host: ${SPRING_DATA_REDIS_HOST}
-      port: ${SPRING_DATA_REDIS_PORT}
-      ssl:
-        enabled: true
-
 
 server:
   port: 2399
@@ -67,7 +60,8 @@ management:
       show-details: always
 
 app:
-  frontend-url: https://nullcanvas.blog
+  #  frontend-url: https://nullcanvas.blog
+  frontend-url: http://localhost:5173
   otp:
     otp-ttl: 5m
     rate-limit:

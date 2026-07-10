@@ -70,7 +70,7 @@ public class EmailService {
 		message.setSubject("Verify your NullCanvas account");
 
 		// Interpolate the OTP into the templated body; the 5-minute notice mirrors the
-		// Redis TTL.
+		// OTP cache TTL.
 		message.setText("""
 				Welcome to NullCanvas!
 

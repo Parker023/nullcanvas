@@ -1,23 +1,24 @@
 package com.nullcanvas.blogapp.auth.service.otp;
 
-import lombok.RequiredArgsConstructor;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tracks failed OTP verification attempts to throttle brute-force guessing.
  *
  * <p>
- * Each wrong guess increments a per-email counter in Redis that expires after a
- * configured window; once the counter passes the allowed maximum, further attempts are
- * disallowed until it expires.
+ * Each wrong guess increments a per-email counter in an in-memory cache that expires
+ * after a configured window; once the counter passes the allowed maximum, further
+ * attempts are disallowed until it expires.
  * </p>
  */
 @Service
-@RequiredArgsConstructor
 public class OtpAttemptService {
 
 	/** Maximum number of failed verification attempts permitted within the window. */
@@ -28,11 +29,14 @@ public class OtpAttemptService {
 	@Value("${app.otp.rate-limit.attempt.window}")
 	private Duration window;
 
-	/** Namespace prefix for the attempt-counter keys. */
-	private static final String PREFIX = "auth:otp:attempts:";
+	/** Per-email failure counters that expire when the window ends. */
+	private Cache<String, AtomicInteger> attemptCounters;
 
-	/** Redis access for the attempt counters. */
-	private final StringRedisTemplate redisTemplate;
+	/** Builds the counter cache once the configured window is available. */
+	@PostConstruct
+	public void init() {
+		attemptCounters = Caffeine.newBuilder().expireAfterWrite(window).build();
+	}
 
 	/**
 	 * Records one failed verification attempt and reports whether further attempts are
@@ -43,18 +47,9 @@ public class OtpAttemptService {
 	 */
 	public boolean recordFailure(String email) {
 
-		String key = PREFIX + email;
-
-		// Atomically increment the per-email failure count (creates the key at 1 on first
-		// failure).
-		Long count = redisTemplate.opsForValue().increment(key);
-
-		// On the first failure, start the expiry window so the counter resets
-		// automatically.
-		if (count == 1) {
-
-			redisTemplate.expire(key, window);
-		}
+		// Increment the per-email failure count; the counter is created (and its window
+		// started) on the first failure and reused until it expires.
+		long count = attemptCounters.get(email, key -> new AtomicInteger()).incrementAndGet();
 
 		// Allowed while the count is within the configured maximum.
 		return count <= maxAttempts;
@@ -66,7 +61,7 @@ public class OtpAttemptService {
 	 */
 	public void reset(String email) {
 
-		redisTemplate.delete(PREFIX + email);
+		attemptCounters.invalidate(email);
 	}
 
 }

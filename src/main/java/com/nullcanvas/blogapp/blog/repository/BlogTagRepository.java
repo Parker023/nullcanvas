@@ -2,7 +2,7 @@ package com.nullcanvas.blogapp.blog.repository;
 
 import com.nullcanvas.blogapp.blog.dto.projection.TagProjection;
 import com.nullcanvas.blogapp.blog.model.BlogTag;
-import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
