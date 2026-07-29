@@ -2,9 +2,20 @@ spring:
   application:
     name: blogapp
   datasource:
-    url: jdbc:postgresql://${RDS_URL}:5432/postgres
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    # Neon Postgres. NEON_HOST must be the "-pooler" endpoint (not the direct
+    # host, which was only for the restore). SSL is required by Neon.
+    url: jdbc:postgresql://${NEON_HOST}/${NEON_DB}?sslmode=require
+    username: ${NEON_USERNAME}
+    password: ${NEON_PASSWORD}
+    hikari:
+      # Neon free plan: 100 CU-hours/month, 0.25 CU floor. A single idle Hikari
+      # connection keeps Neon's compute from suspending (730h x 0.25 ~ 183
+      # CU-hours, ~2x the allowance). Draining the pool to zero lets Neon sleep
+      # after ~5 min idle; the 15s connection-timeout absorbs the ~500ms wake on
+      # the next request.
+      minimum-idle: 0
+      idle-timeout: 30000
+      connection-timeout: 15000
   jpa:
     hibernate:
       ddl-auto: update
