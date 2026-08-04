@@ -29,8 +29,15 @@ import java.util.UUID;
 @Primary
 public class S3RemoteResourceManagementService implements RemoteResourceManagementService {
 
-	@Value("${app.s3.bucket-name}")
+	@Value("${app.r2.bucket-name}")
 	private String bucketName;
+
+	/**
+	 * Public base URL that uploaded objects are served from (an R2 custom domain), with
+	 * no trailing slash. Kept separate from the S3 API endpoint, which is not public.
+	 */
+	@Value("${app.r2.public-base-url}")
+	private String publicBaseUrl;
 
 	private final S3Client s3Client;
 
@@ -54,15 +61,17 @@ public class S3RemoteResourceManagementService implements RemoteResourceManageme
 		try {
 			s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-			String s3url = String.format("https://%s.s3.ap-south-1.amazonaws.com/%s", bucketName, partition);
+			// Serve from the public base URL (R2 custom domain) rather than the storage
+			// API endpoint, which is not publicly readable.
+			String publicUrl = String.format("%s/%s", publicBaseUrl, partition);
 
 			blogRepository.findByPublicId(blogId).ifPresent(blog -> {
-				blog.setCoverImageUrl(s3url);
+				blog.setCoverImageUrl(publicUrl);
 			});
-			return s3url;
+			return publicUrl;
 		}
 		catch (IOException e) {
-			log.error("Error uploading file to S3", e);
+			log.error("Error uploading file to object storage", e);
 			throw new RuntimeException(e);
 		}
 	}

@@ -84,9 +84,14 @@ app:
         retries: 5
   chunk-size: 5000
   recent-post-count: 5
-  s3:
-    bucket-name: nullcanvas-assets
-    region: ap-south-1
+  r2:
+    bucket-name: ${R2_BUCKET_NAME:nullcanvas-assets}
+    # S3-compatible API endpoint: https://<account-id>.r2.cloudflarestorage.com
+    endpoint: ${R2_ENDPOINT}
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    # Custom domain the bucket is served from, no trailing slash.
+    public-base-url: ${R2_PUBLIC_BASE_URL}
   mail:
     from: nullcanvas.admin@nullcanvas.blog
 
