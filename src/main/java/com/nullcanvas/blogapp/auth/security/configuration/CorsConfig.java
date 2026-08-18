@@ -31,9 +31,11 @@ public class CorsConfig {
 
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		// Only the local dev frontend and the production domains may call the API.
-		configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://nullcanvas.blog",
-				"https://nullcanvas.blog", "https://app.nullcanvas.blog"));
+		// Local dev, the production domains, and Cloudflare Pages preview/prod URLs may
+		// call the API. Patterns (not plain origins) are used so the *.pages.dev wildcard
+		// works alongside allowCredentials.
+		configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://nullcanvas.blog",
+				"https://nullcanvas.blog", "https://app.nullcanvas.blog", "https://*.pages.dev"));
 
 		// Permit the standard verbs plus OPTIONS for CORS preflight.
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
