@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Cloud Run local secrets (never commit / never upload)
+env.yaml
+.env

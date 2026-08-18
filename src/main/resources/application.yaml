@@ -58,7 +58,8 @@ spring:
 
 
 server:
-  port: 2399
+  # Cloud Run injects PORT (usually 8080); fall back to 2399 for local runs.
+  port: ${PORT:2399}
   forward-headers-strategy: framework
 
 management:
